@@ -1,0 +1,15 @@
+{
+  "name": "telegram/test",
+  "type": "project",
+  "require": {
+    "ext-curl": "*",
+    "php": ">=7.0",
+    "longman/telegram-bot": "dev-develop as 0.59",
+    "php-telegram-bot/telegram-bot-manager": "^1.4",
+    "vlucas/phpdotenv": "^4.1",
+    "monolog/monolog": "1.x.dev",
+    "google/cloud-dialogflow": "^0.14.1",
+    "google/cloud-storage": "^1.20",
+    "amocrm/oauth2-amocrm": "^2.0"
+  }
+}

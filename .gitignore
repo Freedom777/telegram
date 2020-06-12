@@ -1,0 +1,12 @@
+/.env
+/vendor
+/.idea
+/Upload
+/Download
+/Logs
+/push.php
+/response.txt
+/telegram.zip
+/toolsua.crt
+/toolsua.key
+/small-talk-iohimh-43608e0508e0.json
