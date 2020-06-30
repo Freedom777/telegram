@@ -11,7 +11,10 @@
 namespace Longman\TelegramBot\Commands\SystemCommands;
 
 use Longman\TelegramBot\Commands\SystemCommand;
+use Longman\TelegramBot\Commands\UserCommands\StatusCommand;
+use Longman\TelegramBot\Entities\Update;
 use Longman\TelegramBot\Request;
+use Longman\TelegramBot\TelegramLog;
 
 /**
  * Callback query command
@@ -48,14 +51,31 @@ class CallbackqueryCommand extends SystemCommand
         $callback_query    = $this->getCallbackQuery();
         $callback_query_id = $callback_query->getId();
         $callback_data     = $callback_query->getData();
+        TelegramLog::notice($callback_query_id . ' : ' . var_export($callback_data, true));
 
-        $data = [
+        $update = (array) $this->update;
+        $update['message'] = $update['callback_query']['message'];
+        $update['message']['text'] = $callback_data;
+        $update['message']['from']['id'] = $update['callback_query']['from']['id'];
+
+        switch ($callback_data) {
+            case '/status':
+                return (new StatusCommand($this->telegram, new Update($update)))->preExecute();
+                break;
+            case '/catalog':
+                return (new CatalogCommand($this->telegram, new Update($update)))->preExecute();
+                break;
+        }
+
+
+
+        /*$data = [
             'callback_query_id' => $callback_query_id,
             'text'              => 'Hello World!',
             'show_alert'        => $callback_data === 'thumb up',
             'cache_time'        => 5,
         ];
 
-        return Request::answerCallbackQuery($data);
+        return Request::answerCallbackQuery($data);*/
     }
 }

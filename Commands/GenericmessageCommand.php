@@ -13,6 +13,7 @@ namespace Longman\TelegramBot\Commands\SystemCommands;
 use Longman\TelegramBot\Commands\SystemCommand;
 use Longman\TelegramBot\Conversation;
 use Longman\TelegramBot\Request;
+use Longman\TelegramBot\TelegramLog;
 
 /**
  * Generic message command
@@ -61,16 +62,30 @@ class GenericmessageCommand extends SystemCommand
      */
     public function execute()
     {
+        // TelegramLog::notice(var_export($this->getMessage(), true));
         //If a conversation is busy, execute the conversation command after handling the message
         $conversation = new Conversation(
             $this->getMessage()->getFrom()->getId(),
             $this->getMessage()->getChat()->getId()
         );
+        /*TelegramLog::notice('From: ' . $this->getMessage()->getFrom()->getId() . PHP_EOL);
+        TelegramLog::notice('Chat: ' . $this->getMessage()->getChat()->getId() . PHP_EOL);
+
+        TelegramLog::notice('Exists: ' . (int) $conversation->exists() . PHP_EOL);*/
 
         //Fetch conversation command if it exists and execute it
-        if ($conversation->exists() && ($command = $conversation->getCommand())) {
-            return $this->telegram->executeCommand($command);
+        if ($conversation->exists()){
+            if (($command = $conversation->getCommand())) {
+                // TelegramLog::notice('Command:' . $command);
+                return $this->telegram->executeCommand($command);
+            } else {
+                // TelegramLog::notice($command);
+            }
         }
+
+        /*if ($conversation->exists() && ($command = $conversation->getCommand())) {
+            return $this->telegram->executeCommand($command);
+        }*/
 
         return Request::emptyResponse();
     }

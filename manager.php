@@ -8,19 +8,20 @@
  * https://github.com/php-telegram-bot/telegram-bot-manager#set-extra-bot-parameters
  */
 
-// Load composer
-use Google\Cloud\Dialogflow\V2\QueryInput;
-use Google\Cloud\Dialogflow\V2\SessionsClient;
-use Google\Cloud\Dialogflow\V2\TextInput;
-use Longman\TelegramBot\Commands\SystemCommands\CurrencyCommand;
-use Longman\TelegramBot\Commands\UserCommands\WeatherCommand;
+use Longman\TelegramBot\DB;
 use Longman\TelegramBot\Entities\CallbackQuery;
 use Longman\TelegramBot\Entities\ChosenInlineResult;
 use Longman\TelegramBot\Entities\InlineQuery;
 use Longman\TelegramBot\Entities\Message;
 use Longman\TelegramBot\Entities\Update;
 use Longman\TelegramBot\Request;
-use Google\Cloud\Storage\StorageClient;
+use Longman\TelegramBot\TelegramLog;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 require_once __DIR__ . '/vendor/autoload.php';
 // require_once __DIR__ . '/df.php';
@@ -34,6 +35,8 @@ $botSettings = [
     // Add you bot's API key and name
     'api_key'      => getenv('BOT_API_KEY'),
     'bot_username' => $botUsername,
+    // Secret key required to access the webhook
+    'secret'       => getenv('BOT_API_KEY'),
 
     'commands' => [
         // Define all paths for your custom commands
@@ -56,12 +59,13 @@ $botSettings = [
     'validate_request' => true,
     // (array) When using `validate_request`, also allow these IPs.
     'valid_ips' => [
-        '85.238.106.27'
+        '85.238.106.27',
+        '159.224.34.168',
     ],
 
     // Define all IDs of admin users
     'admins'       => [
-        getenv('ADMIN_TELEGRAM_ID'),
+        (int) getenv('ADMIN_TELEGRAM_ID'),
     ],
 
     // Enter your MySQL database credentials
@@ -73,13 +77,6 @@ $botSettings = [
         'table_prefix'  => getenv('DB_TABLE_PREFIX') ?: '',
     ],
 
-    // Logging (Error, Debug and Raw Updates)
-    'logging'  => [
-        'debug'  => __DIR__ . '/Logs/' . $botUsername . '_debug.log',
-        'error'  => __DIR__ . '/Logs/' . $botUsername . '_error.log',
-        'update' => __DIR__ . '/Logs/' . $botUsername . '_update.log',
-    ],
-
     // Set custom Upload and Download paths
     'paths'    => [
         'download' => __DIR__ . '/Download',
@@ -88,14 +85,12 @@ $botSettings = [
 
     // Requests Limiter (tries to prevent reaching Telegram API limits)
     'limiter'      => ['enabled' => true],
+
+    // 'custom_input'   => 'setCustomInput',
 ];
 
 if (getenv('BOT_MODE') == 'hook') {
     $botSettings = array_merge($botSettings, [
-
-        // Secret key required to access the webhook
-        'secret'       => getenv('BOT_API_KEY'),
-
         'webhook'      => [
             // When using webhook, this needs to be uncommented and defined
             'url' => getenv('BOT_HOOK_URL'),
@@ -103,46 +98,70 @@ if (getenv('BOT_MODE') == 'hook') {
             // 'certificate' => __DIR__ . '/server.crt',
             // Limit maximum number of connections
             'max_connections' => 40,
+            // 'allowed_updates' => ['message', 'edited_channel_post', 'callback_query'],
         ],
-
     ]);
 }
 
 
 // Add you bot's username (also to be used for log file names)
 try {
-    // Authenticating with a keyfile path.
-    $storage = new StorageClient([
-        'keyFilePath' => __DIR__ . '/small-talk-iohimh-43608e0508e0.json'
-    ]);
+    $logger = new Logger('TelegramLogger');
+    $logger->pushHandler(new StreamHandler(__DIR__ . DIRECTORY_SEPARATOR . 'Logs' . DIRECTORY_SEPARATOR . 'global.log', Logger::INFO));
+    TelegramLog::initialize($logger);
 
     $bot = new TelegramBot\TelegramBotManager\BotManager($botSettings);
-
     $bot->setCustomGetUpdatesCallback('handleUpdates');
-
+    // $bot->setBotExtras()
+        /*function ($get_updates_response):string {
+            TelegramLog::notice('HANDLE');
+            return '';
+        }
+    );*/
+        // 'handleUpdates');
     // Run the bot!
     $bot->run();
+    // Text message
+    //$lastUpdate = DB::selectTelegramUpdate(1, $bot->getTelegram()->getLastUpdateId());
+    // TelegramLog::notice(var_export($lastUpdate, true));
 
+    /*if (null === $bot->getTelegram()->getCommandObject()) {
+
+    }*/
 } catch (Longman\TelegramBot\Exception\TelegramException $e) {
     // Silence is golden!
     echo $e;
     // Log telegram errors
-    Longman\TelegramBot\TelegramLog::error($e);
+    TelegramLog::error($e);
 } catch (Longman\TelegramBot\Exception\TelegramLogException $e) {
     // Silence is golden!
     // Uncomment this to catch log initialisation errors
     echo $e;
 }
 
-function handleUpdates($get_updates_response){
+/*function handleUpdates($get_updates_response):string {
+    TelegramLog::notice('HANDLE');
+    return '';
+}*/
+
+/**
+ * @param \Longman\TelegramBot\Entities\ServerResponse $get_updates_response
+ * @return string
+ * @throws \Longman\TelegramBot\Exception\TelegramException
+ */
+function handleUpdates($get_updates_response):string {
+    TelegramLog::notice('HANDLE');
     if (!$get_updates_response->isOk()) {
-        return sprintf(
+        $error = sprintf(
             '%s - Failed to fetch updates' . PHP_EOL . '%s',
             date('Y-m-d H:i:s'),
             $get_updates_response->printError(true)
         );
-    }
+        TelegramLog::error($error);
 
+        return $error;
+    }
+    TelegramLog::notice('RESULT PARSE');
     /** @var Update[] $results */
     $results = array_filter((array) $get_updates_response->getResult());
 
@@ -161,22 +180,21 @@ function handleUpdates($get_updates_response){
         if ($update_content instanceof Message) {
             /** @var Message $update_content */
             $chat_id = $update_content->getChat()->getId();
-            $text    .= ";{$update_content->getType()}";
-            if ('text' == $update_content->getType()) {
-                $inputText = $update_content->getText();
-                /*echo $inputText;
-                if ('курс' == mb_strtolower(mb_substr($inputText, 0, 4))) {
-                    (new CurrencyCommand)->execute();
-                } elseif('погода' == mb_strtolower(mb_substr($inputText, 0, 6))) {
-                    (new WeatherCommand)->getWeatherByLocation(substr($inputText, 8));
-                } else {*/
-                    $answers = detect_intent_texts('small-talk-iohimh', $inputText, $chat_id);
+            $text    .= ';' . $update_content->getType();
 
-                    $result = Request::sendMessage([
-                        'chat_id' => $chat_id,
-                        'text'    => $answers[0],
-                    ]);
-                // }
+            Request::sendMessage([
+                'chat_id' => $chat_id,
+                'text'    => 'Анализирую тип ' . $update_content->getType() . ' ...' . PHP_EOL,
+            ]);
+
+            if (in_array($update_content->getType(), ['text', 'phone_number'])) {
+                $answerText = '';
+                $inputText = $update_content->getText();
+
+                /*Request::sendMessage([
+                    'chat_id' => $chat_id,
+                    'text'    => $answerText,
+                ]);*/
             }
 
         } elseif ($update_content instanceof InlineQuery || $update_content instanceof ChosenInlineResult) {
@@ -197,65 +215,4 @@ function handleUpdates($get_updates_response){
     }
 
     return $output;
-}
-
-/**
- * Returns the result of detect intent with texts as inputs.
- * Using the same `session_id` between requests allows continuation
- * of the conversation.
- * @param $projectId
- * @param $texts
- * @param $sessionId
- * @param string $languageCode
- *
- * @throws \Google\ApiCore\ApiException
- */
-function detect_intent_texts($projectId, $texts, $sessionId, $languageCode = 'ru')
-{
-    // new session
-    $sessionsClient = new SessionsClient();
-    $session = $sessionsClient->sessionName($projectId, $sessionId ?: uniqid());
-    printf('Session path: %s' . PHP_EOL, $session);
-    if (!is_array($texts)) {
-        $texts = [$texts];
-    }
-
-    // query for each string in array
-    $answers = [];
-    foreach ($texts as $text) {
-        // create text input
-        $textInput = new TextInput();
-        $textInput->setText($text);
-        $textInput->setLanguageCode($languageCode);
-
-        // create query input
-        $queryInput = new QueryInput();
-        $queryInput->setText($textInput);
-
-        // get response and relevant info
-        $response = $sessionsClient->detectIntent($session, $queryInput);
-        $queryResult = $response->getQueryResult();
-        $queryText = $queryResult->getQueryText();
-
-        $intent = $queryResult->getIntent();
-        $displayName = 'Unknown';
-        if (null !== $intent && !empty($intent->getDisplayName())) {
-            $displayName = $intent->getDisplayName();
-        }
-        $confidence = $queryResult->getIntentDetectionConfidence();
-        $fulfilmentText = $queryResult->getFulfillmentText();
-
-        // output relevant info
-        print(str_repeat("=", 20) . PHP_EOL);
-        printf('Query text: %s' . PHP_EOL, $queryText);
-        printf('Detected intent: %s (confidence: %f)' . PHP_EOL, $displayName,
-            $confidence);
-        print(PHP_EOL);
-        printf('Fulfilment text: %s' . PHP_EOL, $fulfilmentText);
-
-        $answers [] = $fulfilmentText;
-    }
-
-    $sessionsClient->close();
-    return $answers;
 }

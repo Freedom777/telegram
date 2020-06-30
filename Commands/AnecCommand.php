@@ -2,18 +2,16 @@
 
 namespace Longman\TelegramBot\Commands\SystemCommands;
 
-use Longman\TelegramBot\Commands\SystemCommand;
+use Longman\TelegramBot\Commands\UserCommand;
 use Longman\TelegramBot\DB;
 use Longman\TelegramBot\Request;
-use Longman\TelegramBot\Telegram;
-use TelegramBot\TelegramBotManager\BotManager;
 
 /**
  * Anecdot command
  *
  * Get Anecdot
  */
-class AnecCommand extends SystemCommand
+class AnecCommand extends UserCommand
 {
     /**
      * @var string
