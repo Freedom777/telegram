@@ -75,7 +75,6 @@ class StatusCommand extends UserCommand
         $answerText = '';
 
         $text    = trim($message->getText(true));
-        TelegramLog::notice($text);
 
         //Conversation start
         $this->conversation = new Conversation($user_id, $chat_id, $this->getName());

@@ -1,8 +1,9 @@
 <?php
 
-namespace Longman\TelegramBot\Commands\SystemCommands;
+namespace Longman\TelegramBot\Commands\UserCommands;
 
 use Longman\TelegramBot\Commands\SystemCommand;
+use Longman\TelegramBot\Commands\UserCommand;
 use Longman\TelegramBot\Request;
 
 /**
@@ -10,7 +11,7 @@ use Longman\TelegramBot\Request;
  *
  * Get currencies
  */
-class CurrencyCommand extends SystemCommand
+class CurrencyCommand extends UserCommand
 {
     /**
      * @var string
