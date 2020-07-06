@@ -87,14 +87,12 @@ class SurveySuccessCommand extends AdminCommand {
             $leadsAr = [];
             foreach ($leads as $lead) {
                 // Cut today results
-                TelegramLog::notice(var_export($lead->getDateUpdate(), true));
-                die();
-                if (new \DateTime($lead->getDateUpdate(), new \DateTimeZone(self::TIMEZONE)) <= $endSearch) {
+                if ($lead->getDateUpdate() <= $endSearch) {
                     // Get last updated Lead for User
                     if (
                         empty($leadsAr [$lead->getMainContactId()]) ||
-                            new \DateTime($lead->getDateUpdate(), new \DateTimeZone(self::TIMEZONE)) >
-                            new \DateTime($leadsAr [$lead->getMainContactId()] ['updated_at'], new \DateTimeZone(self::TIMEZONE))
+                            $lead->getDateUpdate() >
+                            $leadsAr [$lead->getMainContactId()] ['updated_at']
                         ) {
                         $leadsAr [$lead->getMainContactId()] = [
                             'lead_id' => $lead->getId(),
