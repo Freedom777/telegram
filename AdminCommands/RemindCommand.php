@@ -70,9 +70,9 @@ class RemindCommand extends AdminCommand {
             $pipelineId = 1979362; // id Воронки
             // $statusId = 142; // id Статуса: Успешно реализовано
 
-            $datetime = new \DateTimeImmutable(date('Y-m-d 00:00:00'), new \DateTimeZone('Europe/Kiev'));
             /** @var \DateTime $startSearch */
-            $startSearch = $datetime->modify('-' . getenv('AMOCRM_SUCCESS_ORDER_REMINDER_DAYS') . ' days');
+            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone('Europe/Kiev'));
+            $startSearch->modify('-' . getenv('AMOCRM_SUCCESS_ORDER_REMINDER_DAYS') . ' days');
 
             /** @var \DrillCoder\AmoCRM_Wrap\Lead[] $leads */
             $leads = $amo->searchLeads(null, $pipelineId, [], 0, 0, [], $startSearch);
