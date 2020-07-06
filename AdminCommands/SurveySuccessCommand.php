@@ -11,21 +11,21 @@ use Longman\TelegramBot\Request;
 use PDO;
 use PDOStatement;
 
-class RemindCommand extends AdminCommand {
+class SurveySuccessCommand extends AdminCommand {
     /**
      * @var string
      */
-    protected $name = 'remind';
+    protected $name = 'surveysuccess';
 
     /**
      * @var string
      */
-    protected $description = 'Remind user about events.';
+    protected $description = 'Survey for user after success Order.';
 
     /**
      * @var string
      */
-    protected $usage = '/remind';
+    protected $usage = '/surveysuccess';
 
     /**
      * @var string
@@ -50,7 +50,9 @@ class RemindCommand extends AdminCommand {
         29362318    => 'НЕзавершенные',
         142         => 'Успешно реализовано',
         143         => 'Закрыто и не реализовано',
-];
+    ];
+
+    const TIMEZONE = 'Europe/Kiev';
 
     public function execute()
     {
@@ -68,30 +70,51 @@ class RemindCommand extends AdminCommand {
             $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
             $pipelineId = 1979362; // id Воронки
-            // $statusId = 142; // id Статуса: Успешно реализовано
+            $statusId = 142; // id Статуса: Успешно реализовано
 
             /** @var \DateTime $startSearch */
-            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone('Europe/Kiev'));
-            $startSearch->modify('-' . getenv('AMOCRM_SUCCESS_ORDER_REMINDER_DAYS') . ' days');
+            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone(self::TIMEZONE));
+            // Yesterday from 00:00, one Survey for each day
+            $startSearch->modify('-1 days');
+
+            $endSearch = new \DateTime(date('Y-m-d 23:59:59'), new \DateTimeZone(self::TIMEZONE));
+            $endSearch->modify('-1 days');
 
             /** @var \DrillCoder\AmoCRM_Wrap\Lead[] $leads */
-            $leads = $amo->searchLeads(null, $pipelineId, [], 0, 0, [], $startSearch);
+            $leads = $amo->searchLeads(null, $pipelineId, [$statusId], 0, 0, [], $startSearch);
 
             /** @inherited $lead */
             $leadsAr = [];
             foreach ($leads as $lead) {
-                $leadsAr [$lead->getId()] = [
-                    'updated_at' => $lead->getDateUpdate(),
-                    'phones' => $lead->getPhones(),
-                    'status_id' => $lead->getStatusId(),
-                    'user_id' => $lead->getMainContactId(),
-                ];
+                // Cut today results
+                if (new \DateTime($lead->getDateUpdate(), new \DateTimeZone(self::TIMEZONE)) <= $endSearch) {
+                    // Get last updated Lead for User
+                    if (
+                        empty($leadsAr [$lead->getMainContactId()]) ||
+                            new \DateTime($lead->getDateUpdate(), new \DateTimeZone(self::TIMEZONE)) >
+                            new \DateTime($leadsAr [$lead->getMainContactId()] ['updated_at'], new \DateTimeZone(self::TIMEZONE))
+                        ) {
+                        $leadsAr [$lead->getMainContactId()] = [
+                            'lead_id' => $lead->getId(),
+                            'updated_at' => $lead->getDateUpdate(),
+                            'phones' => $lead->getPhones(),
+                            'status_id' => $lead->getStatusId(),
+                            'user_id' => $lead->getMainContactId(),
+                        ];
+                    }
+                }
 
 
                 // $leadsAr[] = $lead->getId() . ', ' . $lead->getName() . ': ' . implode(',', $lead->getMainContact()->getPhones());
             }
 
-            TelegramLog::notice(sizeof($leadsAr));
+            TelegramLog::notice(sizeof($leadsAr) . PHP_EOL . PHP_EOL);
+
+            foreach ($leadsAr as $userId => $leadAr) {
+                TelegramLog::notice($userId . ' : ' . var_export($leadAr, true) . PHP_EOL);
+            }
+
+
         } catch (AmoWrapException $e) {
             TelegramLog::error($e->getMessage());
         }

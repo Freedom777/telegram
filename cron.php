@@ -7,7 +7,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . 'settings.php';
 
 // Your command(s) to run, pass it just like in a message (arguments supported)
 $commands = [
-    '/remind'
+    '/surveysuccess'
     /*'/whoami',
     "/echo I'm a bot!",*/
 ];
