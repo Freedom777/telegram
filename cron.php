@@ -25,10 +25,10 @@ try {
     // Enable admin users
     // $telegram->enableAdmins($admin_users);
     // Requests Limiter (tries to prevent reaching Telegram API limits)
-    $telegram->enableLimiter();
+    $bot->enableLimiter();
 
     // Run user selected commands
-    $telegram->runCommands($commands);
+    $bot->runCommands($commands);
 
 } catch (Longman\TelegramBot\Exception\TelegramException $e) {
     // Silence is golden!
