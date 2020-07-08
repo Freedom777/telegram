@@ -134,7 +134,7 @@ class StatusCommand extends UserCommand
 
                             // Update table
                             if ($user_id == $chat_id) { // Private chat
-                                $amocrm_user_id = $contact->getMainContactId();
+                                $amocrm_user_id = $contact->getId();
 
                                 /** @var \PDOStatement $pdoStatement */
                                 $sth = DB::getPdo()->prepare('
