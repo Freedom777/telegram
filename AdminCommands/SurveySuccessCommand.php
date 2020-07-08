@@ -92,14 +92,26 @@ class SurveySuccessCommand extends AdminCommand {
                             $leadsAr [$lead->getMainContactId()] ['updated_at']
                         ) {
                         $leadsAr [$lead->getMainContactId()] = [
+                            'user_id' => $lead->getMainContactId(),
                             'lead_id' => $lead->getId(),
+                            'status_id' => $lead->getStatusId(),
                             'updated_at' => $lead->getDateUpdate(),
                             'phones' => $lead->getMainContact()->getPhones(),
-                            'status_id' => $lead->getStatusId(),
-                            'user_id' => $lead->getMainContactId(),
                         ];
                     }
                 }
+            }
+
+            /** @var PDOStatement $pdoStatement */
+            $pdoStatement = DB::getPdo()->query('
+                SELECT `user_id`, `lead_id`
+                FROM `cron_message`
+                WHERE `status` = ' . $statusId . ' AND `created_at` >= "' . $startSearch->format('Y-m-d H:i:s') . '"' .
+                    ' AND `created_at` <= "' . $endSearch->format('Y-m-d H:i:s') . '"'
+            , PDO::FETCH_ASSOC);
+            $existUsersAr = [];
+            foreach ($pdoStatement as $row) {
+                $existUsersAr [$row ['lead_id']] = $row['user_id'];
             }
 
             $sth = DB::getPdo()->prepare('
@@ -115,14 +127,16 @@ class SurveySuccessCommand extends AdminCommand {
                 `updated_at` = :created_at 
             ');
             foreach ($leadsAr as $userId => $leadAr) {
-                $sth->execute([
-                    ':amocrm_user_id' => $leadAr ['user_id'],
-                    ':amocrm_lead_id' => $leadAr ['lead_id'],
-                    ':amocrm_status_id' => $leadAr ['status_id'],
-                    ':phones' => $this->processPhones($leadAr ['phones']),
-                    ':type' => self::SURVEY_FEEDBACK,
-                    ':created_at' => $leadAr ['updated_at']->format('Y-m-d H:i:s'),
-                ]);
+                if (!in_array($leadAr ['user_id'], $existUsersAr)){
+                    $sth->execute([
+                        ':amocrm_user_id' => $leadAr ['user_id'],
+                        ':amocrm_lead_id' => $leadAr ['lead_id'],
+                        ':amocrm_status_id' => $leadAr ['status_id'],
+                        ':phones' => $this->processPhones($leadAr ['phones']),
+                        ':type' => self::SURVEY_FEEDBACK,
+                        ':created_at' => $leadAr ['updated_at']->format('Y-m-d H:i:s'),
+                    ]);
+                }
             }
 
 
