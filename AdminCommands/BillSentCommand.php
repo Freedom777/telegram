@@ -11,7 +11,7 @@ use Longman\TelegramBot\Request;
 use PDO;
 use PDOStatement;
 
-class RemindCommand extends AdminCommand {
+class BillSentCommand extends AdminCommand {
     /**
      * @var string
      */
