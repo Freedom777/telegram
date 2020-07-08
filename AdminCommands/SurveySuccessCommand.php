@@ -106,8 +106,9 @@ class SurveySuccessCommand extends AdminCommand {
             $pdoStatement = DB::getPdo()->query('
                 SELECT `amocrm_user_id`, `amocrm_lead_id`
                 FROM `cron_message`
-                WHERE `amocrm_status_id` = ' . $statusId . ' AND `created_at` >= "' . $startSearch->format('Y-m-d H:i:s') . '"' .
-                    ' AND `created_at` <= "' . $endSearch->format('Y-m-d H:i:s') . '" AND `type` = "' . self::SURVEY_FEEDBACK . '"'
+                WHERE `type` = "' . self::SURVEY_FEEDBACK . '" AND `amocrm_status_id` = ' . $statusId .
+                    ' AND `created_at` >= "' . $startSearch->format('Y-m-d H:i:s') . '"' .
+                    ' AND `created_at` <= "' . $endSearch->format('Y-m-d H:i:s') . '"'
             , PDO::FETCH_ASSOC);
             $existUsersAr = [];
             foreach ($pdoStatement as $row) {
