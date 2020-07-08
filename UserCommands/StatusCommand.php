@@ -154,10 +154,10 @@ class StatusCommand extends UserCommand
                                 TelegramLog::notice(var_export($exist, true));
                                 if (empty($exist) || $phone != $exist ['phone']) {
                                     $sth = DB::getPdo()->prepare('
-                                        INSERT INTO `amocrm_user` SET 
+                                        INSERT INTO `amocrm_user` SET
+                                        `chat_id` = :chat_id, 
                                         `amocrm_user_id` = :amocrm_user_id,
-                                        `chat_id` = :chat_id,
-                                        `phone` = :phone,
+                                        `phone` = :phone
                                     ');
                                     $sth->execute([
                                         ':chat_id' => $chat_id,
