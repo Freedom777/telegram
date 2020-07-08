@@ -133,6 +133,7 @@ class StatusCommand extends UserCommand
                             $contact = current($contacts);
 
                             // Update table
+                            TelegramLog::notice($user_id . '==' . $chat_id);
                             if ($user_id == $chat_id) { // Private chat
                                 $amocrm_user_id = $contact->getId();
 
@@ -149,6 +150,8 @@ class StatusCommand extends UserCommand
                                     ':amocrm_user_id' => $amocrm_user_id,
                                 ]);
                                 $exist = $sth->fetch(\PDO::FETCH_ASSOC);
+                                TelegramLog::notice($phone);
+                                TelegramLog::notice(var_export($exist, true));
                                 if (empty($exist) || $phone != $exist ['phone']) {
                                     $sth = DB::getPdo()->prepare('
                                         INSERT INTO `amocrm_user` SET 
