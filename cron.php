@@ -10,6 +10,7 @@ $commands = [
     '/surveysuccess',
     '/surveyfail',
     '/billsent',
+    '/remind'
     /*'/whoami',
     "/echo I'm a bot!",*/
 ];

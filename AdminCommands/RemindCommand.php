@@ -50,51 +50,77 @@ class RemindCommand extends AdminCommand {
         29362318    => 'НЕзавершенные',
         142         => 'Успешно реализовано',
         143         => 'Закрыто и не реализовано',
-];
+    ];
+
+    const TIMEZONE = 'Europe/Kiev';
 
     public function execute()
     {
-        $message = $this->getMessage();
-        $text    = trim($message->getText(true));
-
         /** @var PDOStatement $pdoStatement */
-        $pdoStatement = DB::getPdo()->query('SELECT `user_id`, `text` FROM `message` WHERE `chat_id` = `user_id` AND `entities` LIKE \'%"length":10,"type":"phone_number"%\'', PDO::FETCH_ASSOC);
+        $pdoStatement = DB::getPdo()->query('
+            SELECT `amocrm_user_id`, `chat_id`, `phone`
+            FROM `amocrm_user`
+            ORDER BY `id` DESC
+            GROUP BY `amocrm_user_id`', PDO::FETCH_ASSOC);
+        $amocrmUsersAr = [];
+        foreach ($pdoStatement as $row) {
+            $amocrmUsersAr [(int) $row['amocrm_user_id']] = [
+                'chat_id' => (int) $row ['chat_id'],
+                'phone' => $row ['phone']
+            ];
+        }
+        /*$pdoStatement = DB::getPdo()->query('SELECT `user_id`, `text` FROM `message` WHERE `chat_id` = `user_id` AND `entities` LIKE \'%"length":10,"type":"phone_number"%\'', PDO::FETCH_ASSOC);
         $resultAr = [];
         foreach ($pdoStatement as $row) {
             $resultAr [$row['user_id']] = $row ['text'];
-        }
+        }*/
+        if (!empty($amocrmUsersAr)) {
+            try {
+                $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
-        try {
-            $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
+                $pipelineId = 1979362; // id Воронки
 
-            $pipelineId = 1979362; // id Воронки
-            // $statusId = 142; // id Статуса: Успешно реализовано
+                /** @var \DateTime $startSearch */
+                $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone(self::TIMEZONE));
+                $startSearch->modify('-' . getenv('AMOCRM_SUCCESS_ORDER_REMINDER_DAYS') . ' days');
 
-            /** @var \DateTime $startSearch */
-            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone('Europe/Kiev'));
-            $startSearch->modify('-' . getenv('AMOCRM_SUCCESS_ORDER_REMINDER_DAYS') . ' days');
+                /** @var \DrillCoder\AmoCRM_Wrap\Lead[] $leads */
+                $leads = $amo->searchLeads(null, $pipelineId, [], 0, 0, [], $startSearch);
 
-            /** @var \DrillCoder\AmoCRM_Wrap\Lead[] $leads */
-            $leads = $amo->searchLeads(null, $pipelineId, [], 0, 0, [], $startSearch);
+                $leadUsersAr = [];
+                /** @inherited $lead */
+                foreach ($leads as $lead) {
+                    $leadUsersAr [(int) $lead->getMainContactId()] = (int) $lead->getMainContactId();
+                }
+                $amocrmUsersAr = array_diff_key($amocrmUsersAr, $leadUsersAr);
 
-            /** @inherited $lead */
-            $leadsAr = [];
-            foreach ($leads as $lead) {
-                $leadsAr [$lead->getId()] = [
-                    'updated_at' => $lead->getDateUpdate(),
-                    'phones' => $lead->getPhones(),
-                    'status_id' => $lead->getStatusId(),
-                    'user_id' => $lead->getMainContactId(),
-                ];
-
-
-                // $leadsAr[] = $lead->getId() . ', ' . $lead->getName() . ': ' . implode(',', $lead->getMainContact()->getPhones());
+                if (!empty($amocrmUsersAr)) {
+                    $sth = DB::getPdo()->prepare('
+                    INSERT INTO `cron_message` SET 
+                    `amocrm_user_id` = :amocrm_user_id,
+                    `amocrm_lead_id` = NULL,
+                    `amocrm_status_id` = NULL,
+                    `chat_id` = :chat_id,
+                    `phones` = :phones,
+                    `type` = :type,
+                    `status` = 0,
+                    `created_at` = NOW(),
+                    `updated_at` = NOW() 
+                ');
+                    foreach ($amocrmUsersAr as $amocrmUserId => $chatAr) {
+                        $sth->execute([
+                            ':amocrm_user_id' => $amocrmUserId,
+                            ':chat_id' => $chatAr ['chat_id'],
+                            ':phones' =>  $chatAr ['phone'],
+                            ':type' => self::REMIND_NO_ORDER,
+                        ]);
+                    }
+                }
+            } catch (AmoWrapException $e) {
+                TelegramLog::error($e->getMessage());
             }
-
-            TelegramLog::notice(sizeof($leadsAr));
-        } catch (AmoWrapException $e) {
-            TelegramLog::error($e->getMessage());
         }
+
 
 
         /*echo implode('<br />', $leadsAr);
