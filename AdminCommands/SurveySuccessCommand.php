@@ -108,34 +108,13 @@ class SurveySuccessCommand extends AdminCommand {
                 `amocrm_lead_id` = :amocrm_lead_id,
                 `amocrm_status_id` = :amocrm_status_id,
                 `chat_id` = NULL,
-                `phones` => :phones,
+                `phones` = :phones,
                 `type` = :type,
                 `status` = 0,
                 `created_at` = :created_at,
                 `updated_at` = :created_at 
             ');
             foreach ($leadsAr as $userId => $leadAr) {
-            echo '
-                INSERT INTO `cron_message` SET 
-                `amocrm_user_id` = :amocrm_user_id,
-                `amocrm_lead_id` = :amocrm_lead_id,
-                `amocrm_status_id` = :amocrm_status_id,
-                `chat_id` = NULL,
-                `phones` => :phones,
-                `type` = :type,
-                `status` = 0,
-                `created_at` = :created_at,
-                `updated_at` = :created_at 
-            ';
-            var_dump([
-                ':amocrm_user_id' => $leadAr ['user_id'],
-                ':amocrm_lead_id' => $leadAr ['lead_id'],
-                ':amocrm_status_id' => $leadAr ['status_id'],
-                ':phones' => $this->processPhones($leadAr ['phones']),
-                ':type' => self::SURVEY_FEEDBACK,
-                ':created_at' => $leadAr ['updated_at']->format('Y-m-d H:i:s'),
-            ]);
-            die();
                 $sth->execute([
                     ':amocrm_user_id' => $leadAr ['user_id'],
                     ':amocrm_lead_id' => $leadAr ['lead_id'],

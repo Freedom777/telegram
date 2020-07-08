@@ -102,19 +102,19 @@ class SurveyFailCommand extends AdminCommand {
                 }
             }
 
+            $sth = DB::getPdo()->prepare('
+                INSERT INTO `cron_message` SET 
+                `amocrm_user_id` = :amocrm_user_id,
+                `amocrm_lead_id` = :amocrm_lead_id,
+                `amocrm_status_id` = :amocrm_status_id,
+                `chat_id` = NULL,
+                `phones` = :phones,
+                `type` = :type,
+                `status` = 0,
+                `created_at` = :created_at,
+                `updated_at` = :created_at 
+            ');
             foreach ($leadsAr as $userId => $leadAr) {
-                $sth = DB::getPdo()->prepare('
-                    INSERT INTO `cron_message` SET 
-                    `amocrm_user_id` = :amocrm_user_id,
-                    `amocrm_lead_id` = :amocrm_lead_id,
-                    `amocrm_status_id` = :amocrm_status_id,
-                    `chat_id` = NULL,
-                    `phones` => :phones,
-                    `type` = :type,
-                    `status` = 0,
-                    `created_at` = :created_at,
-                    `updated_at` = :created_at 
-                ');
                 $sth->execute([
                     ':amocrm_user_id' => $leadAr ['user_id'],
                     ':amocrm_lead_id' => $leadAr ['lead_id'],
