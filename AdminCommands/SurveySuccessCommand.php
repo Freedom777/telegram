@@ -56,9 +56,6 @@ class SurveySuccessCommand extends AdminCommand {
 
     public function execute()
     {
-        $message = $this->getMessage();
-        $text    = trim($message->getText(true));
-
         /** @var PDOStatement $pdoStatement */
         $pdoStatement = DB::getPdo()->query('SELECT `user_id`, `text` FROM `message` WHERE `chat_id` = `user_id` AND `entities` LIKE \'%"length":10,"type":"phone_number"%\'', PDO::FETCH_ASSOC);
         $resultAr = [];
@@ -103,38 +100,34 @@ class SurveySuccessCommand extends AdminCommand {
                         ];
                     }
                 }
-
-
-                // $leadsAr[] = $lead->getId() . ', ' . $lead->getName() . ': ' . implode(',', $lead->getMainContact()->getPhones());
             }
 
-            TelegramLog::notice(sizeof($leadsAr) . PHP_EOL . PHP_EOL);
-
             foreach ($leadsAr as $userId => $leadAr) {
-                TelegramLog::notice($userId . ' : ' . var_export($leadAr, true) . PHP_EOL);
+                $sth = DB::getPdo()->prepare('
+                    INSERT INTO `cron_message` SET 
+                    `amocrm_user_id` = :amocrm_user_id,
+                    `amocrm_lead_id` = :amocrm_lead_id,
+                    `amocrm_status_id` = :amocrm_status_id,
+                    `chat_id` = NULL,
+                    `phones` => :phones,
+                    `type` = :type,
+                    `status` = 0,
+                    `created_at` = :created_at,
+                    `updated_at` = :created_at 
+                ');
+                $sth->execute([
+                    ':amocrm_user_id' => $leadAr ['user_id'],
+                    ':amocrm_lead_id' => $leadAr ['lead_id'],
+                    ':amocrm_status_id' => $leadAr ['status_id'],
+                    ':phones' => $leadAr ['phones'],
+                    ':type' => self::SURVEY_FEEDBACK,
+                    ':created_at' => $leadAr ['updated_at'],
+                ]);
             }
 
 
         } catch (AmoWrapException $e) {
             TelegramLog::error($e->getMessage());
         }
-
-
-        /*echo implode('<br />', $leadsAr);
-
-        foreach ($resultAr as $chat_id => $phone) {
-            $data = [
-                'chat_id' => getenv('CHANNEL_CHAT_ID'),
-                'text' => 'Доброй ночи, дорогие клиенты!',
-            ];
-        }
-
-
-        $data = [
-            'chat_id' => getenv('CHANNEL_CHAT_ID'),
-            'text' => $text,
-        ];
-
-        Request::sendMessage($data);*/
     }
 }
