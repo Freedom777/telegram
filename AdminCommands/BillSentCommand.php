@@ -67,10 +67,10 @@ class BillSentCommand extends AdminCommand {
 
             /** @var \DateTime $startSearch */
             $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone(self::TIMEZONE));
-            $startSearch->modify('-' . getenv('AMOCRM_SUCCESS_ORDER_REMINDER_DAYS') . ' days');
+            $startSearch->modify('-' . getenv('AMOCRM_BILL_SENT_REMINDER_DAYS') . ' days');
 
             $endSearch = new \DateTime(date('Y-m-d 23:59:59'), new \DateTimeZone(self::TIMEZONE));
-            $endSearch->modify('-' . getenv('AMOCRM_SUCCESS_ORDER_REMINDER_DAYS') . ' days');
+            $endSearch->modify('-' . getenv('AMOCRM_BILL_SENT_REMINDER_DAYS') . ' days');
 
             /** @var \DrillCoder\AmoCRM_Wrap\Lead[] $leads */
             $leads = $amo->searchLeads(null, $pipelineId, [], 0, 0, [], $startSearch);
