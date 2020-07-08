@@ -110,6 +110,8 @@ class SurveySuccessCommand extends AdminCommand {
                     ':phones' => implode(',', $leadAr ['phones']),
                     ':type' => self::SURVEY_FEEDBACK,
                     ':created_at' => $leadAr ['updated_at']->format('Y-m-d H:i:s'),
+                    'phones' => $lead->getMainContact()->getPhones(),
+                    'phon' => $lead->getPhones(),
                 ]);
                 die();
                 $sth = DB::getPdo()->prepare('
