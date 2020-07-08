@@ -60,8 +60,9 @@ class RemindCommand extends AdminCommand {
         $pdoStatement = DB::getPdo()->query('
             SELECT `amocrm_user_id`, `chat_id`, `phone`
             FROM `amocrm_user`
-            ORDER BY `id` DESC
-            GROUP BY `amocrm_user_id`', PDO::FETCH_ASSOC);
+            GROUP BY `amocrm_user_id`
+            ORDER BY `id` DESC'
+        , PDO::FETCH_ASSOC);
         $amocrmUsersAr = [];
         foreach ($pdoStatement as $row) {
             $amocrmUsersAr [(int) $row['amocrm_user_id']] = [
