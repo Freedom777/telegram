@@ -133,7 +133,6 @@ class StatusCommand extends UserCommand
                             $contact = current($contacts);
 
                             // Update table
-                            TelegramLog::notice($user_id . '==' . $chat_id);
                             if ($user_id == $chat_id) { // Private chat
                                 $amocrm_user_id = $contact->getId();
 
@@ -150,8 +149,6 @@ class StatusCommand extends UserCommand
                                     ':amocrm_user_id' => $amocrm_user_id,
                                 ]);
                                 $exist = $sth->fetch(\PDO::FETCH_ASSOC);
-                                TelegramLog::notice($phone);
-                                TelegramLog::notice(var_export($exist, true));
                                 if (empty($exist) || $phone != $exist ['phone']) {
                                     $sth = DB::getPdo()->prepare('
                                         INSERT INTO `amocrm_user` SET
@@ -187,38 +184,5 @@ class StatusCommand extends UserCommand
         }
 
         return $result;
-
-        /*$phone = trim($message->getText(true));
-        if ($phone !== '') {
-            try {
-                $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
-            } catch (AmoWrapException $e) {
-                $answerText = 'Ошибка при подключении к AmoCRM.';
-            }
-
-            if (empty($answerText)) {
-                $contacts =  $amo->searchContacts($phone); //Ищем контакт по телефону и почте
-                if (!empty($contacts)) {
-                    $contact = current($contacts);
-                    $leads = $contact->getLeads();
-                    if (!empty($leads)) {
-                        foreach ($leads as $lead) {
-                            $answerText .= $lead->getName() . ' : ' . $lead->getStatusName() . PHP_EOL;
-                        }
-                    }
-                } else {
-                    $answerText = 'Контакт не найден.';
-                }
-            }
-        } else {
-            $answerText = 'Вы должны указать телефон в формате: /status <phone>';
-        }*/
-
-        /*$data = [
-            'chat_id' => $chat_id,
-            'text'    => $answerText,
-        ];
-
-        return Request::sendMessage($data);*/
     }
 }
