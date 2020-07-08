@@ -94,7 +94,7 @@ class SurveyFailCommand extends AdminCommand {
                         $leadsAr [$lead->getMainContactId()] = [
                             'lead_id' => $lead->getId(),
                             'updated_at' => $lead->getDateUpdate(),
-                            'phones' => $lead->getPhones(),
+                            'phones' => $lead->getMainContact()->getPhones(),
                             'status_id' => $lead->getStatusId(),
                             'user_id' => $lead->getMainContactId(),
                         ];
@@ -119,7 +119,7 @@ class SurveyFailCommand extends AdminCommand {
                     ':amocrm_user_id' => $leadAr ['user_id'],
                     ':amocrm_lead_id' => $leadAr ['lead_id'],
                     ':amocrm_status_id' => $leadAr ['status_id'],
-                    ':phones' => implode(',', $leadAr ['phones']),
+                    ':phones' => $this->processPhones($leadAr ['phones']),
                     ':type' => self::SURVEY_NOT_BOUGHT,
                     ':created_at' => $leadAr ['updated_at']->format('Y-m-d H:i:s'),
                 ]);
@@ -129,5 +129,18 @@ class SurveyFailCommand extends AdminCommand {
         } catch (AmoWrapException $e) {
             TelegramLog::error($e->getMessage());
         }
+    }
+
+    protected function processPhones($phonesAr) {
+        $phonesEscapedAr = [];
+        if (!empty($phonesAr)) {
+            foreach ($phonesAr as $phoneNum) {
+                $phonesEscapedAr [] = substr(preg_replace('/[^0-9+]/', '', $phoneNum), -10);
+            }
+        }
+        if (empty($phonesEscapedAr)) {
+            return '';
+        }
+        return implode(',', $phonesEscapedAr);
     }
 }
