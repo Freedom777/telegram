@@ -14,6 +14,7 @@ use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use DrillCoder\AmoCRM_Wrap\AmoWrapException;
 use Longman\TelegramBot\Commands\UserCommand;
 use Longman\TelegramBot\Conversation;
+use Longman\TelegramBot\DB;
 use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Request;
 use Longman\TelegramBot\TelegramLog;
@@ -130,6 +131,39 @@ class StatusCommand extends UserCommand
                         $contacts =  $amo->searchContacts($phone); //Ищем контакт по телефону и почте
                         if (!empty($contacts)) {
                             $contact = current($contacts);
+
+                            // Update table
+                            if ($user_id == $chat_id) { // Private chat
+                                $amocrm_user_id = $contact->getMainContactId();
+
+                                /** @var \PDOStatement $pdoStatement */
+                                $sth = DB::getPdo()->prepare('
+                                    SELECT `phone`
+                                    FROM `amocrm_user`
+                                    WHERE `chat_id` = :chat_id AND `amocrm_user_id` = :amocrm_user_id
+                                    ORDER BY `id` DESC
+                                    LIMIT 1'
+                                );
+                                $sth->execute([
+                                    ':chat_id' => $chat_id,
+                                    ':amocrm_user_id' => $amocrm_user_id,
+                                ]);
+                                $exist = $sth->fetch(\PDO::FETCH_ASSOC);
+                                if (empty($exist) || $phone != $exist ['phone']) {
+                                    $sth = DB::getPdo()->prepare('
+                                        INSERT INTO `amocrm_user` SET 
+                                        `amocrm_user_id` = :amocrm_user_id,
+                                        `chat_id` = :chat_id,
+                                        `phone` = :phone,
+                                    ');
+                                    $sth->execute([
+                                        ':chat_id' => $chat_id,
+                                        ':amocrm_user_id' => $amocrm_user_id,
+                                        ':phone' => $phone,
+                                    ]);
+                                }
+                            }
+
                             $leads = $contact->getLeads();
                             if (!empty($leads)) {
                                 foreach ($leads as $lead) {
