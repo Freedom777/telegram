@@ -9,6 +9,7 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . 'settings.php';
 $commands = [
     '/surveysuccess',
     '/surveyfail',
+    '/billsent',
     /*'/whoami',
     "/echo I'm a bot!",*/
 ];

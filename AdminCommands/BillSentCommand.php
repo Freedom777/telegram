@@ -52,69 +52,110 @@ class BillSentCommand extends AdminCommand {
         143         => 'Закрыто и не реализовано',
     ];
 
+    const TIMEZONE = 'Europe/Kiev';
+
     public function execute()
     {
         $message = $this->getMessage();
         $text    = trim($message->getText(true));
 
-        /** @var PDOStatement $pdoStatement */
-        $pdoStatement = DB::getPdo()->query('SELECT `user_id`, `text` FROM `message` WHERE `chat_id` = `user_id` AND `entities` LIKE \'%"length":10,"type":"phone_number"%\'', PDO::FETCH_ASSOC);
-        $resultAr = [];
-        foreach ($pdoStatement as $row) {
-            $resultAr [$row['user_id']] = $row ['text'];
-        }
-
         try {
             $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
             $pipelineId = 1979362; // id Воронки
-            $statusId = 29361433; // id Статуса: Успешно реализовано
+            $statusId = 29361433; // id Статуса: Договор/счет отправлен
 
             /** @var \DateTime $startSearch */
-            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone('Europe/Kiev'));
+            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone(self::TIMEZONE));
             $startSearch->modify('-' . getenv('AMOCRM_SUCCESS_ORDER_REMINDER_DAYS') . ' days');
 
             $endSearch = new \DateTime(date('Y-m-d 23:59:59'), new \DateTimeZone(self::TIMEZONE));
-            $endSearch->modify('-1 days');
+            $endSearch->modify('-' . getenv('AMOCRM_SUCCESS_ORDER_REMINDER_DAYS') . ' days');
 
             /** @var \DrillCoder\AmoCRM_Wrap\Lead[] $leads */
-            $leads = $amo->searchLeads(null, $pipelineId, [$statusId], 0, 0, [], $startSearch);
+            $leads = $amo->searchLeads(null, $pipelineId, [], 0, 0, [], $startSearch);
 
             /** @inherited $lead */
             $leadsAr = [];
             foreach ($leads as $lead) {
-                $leadsAr [$lead->getId()] = [
-                    'updated_at' => $lead->getDateUpdate(),
-                    'phones' => $lead->getPhones(),
-                    'status_id' => $lead->getStatusId(),
-                    'user_id' => $lead->getMainContactId(),
-                ];
-
-
-                // $leadsAr[] = $lead->getId() . ', ' . $lead->getName() . ': ' . implode(',', $lead->getMainContact()->getPhones());
+                // Cut -AMOCRM_SUCCESS_ORDER_REMINDER_DAYS day results with Order sent status
+                if ($lead->getDateUpdate() <= $endSearch && $lead->getStatusId() == $statusId) {
+                    $leadsAr [$lead->getId()] = [
+                        'user_id' => $lead->getMainContactId(),
+                        'lead_id' => $lead->getId(),
+                        'status_id' => $lead->getStatusId(),
+                        'updated_at' => $lead->getDateUpdate(),
+                        'phones' => $lead->getMainContact()->getPhones(),
+                    ];
+                }
             }
 
-            TelegramLog::notice(sizeof($leadsAr));
+            if (!empty($leadsAr)) {
+                // Check leads, remove from process if status changed
+                foreach ($leads as $lead) {
+                    if (isset($leadsAr [$lead->getId()]) &&
+                        $lead->getDateUpdate() > $leadsAr [$lead->getId()] ['updated_at'] &&
+                        $lead->getStatusId() != $statusId
+                    ) {
+                        unset($leadsAr [$lead->getId()]);
+                    }
+                }
+
+                if (!empty($leadsAr)) {
+                    /** @var PDOStatement $pdoStatement */
+                    $pdoStatement = DB::getPdo()->query('
+                        SELECT `amocrm_user_id`, `amocrm_lead_id`
+                        FROM `cron_message`
+                        WHERE `type` = "' . self::BILL_SENT . '" AND `amocrm_status_id` = ' . $statusId .
+                                ' AND `created_at` >= "' . $startSearch->format('Y-m-d H:i:s') . '"' .
+                                ' AND `created_at` <= "' . $endSearch->format('Y-m-d H:i:s') . '"'
+                                , PDO::FETCH_ASSOC);
+                    $existLeadsAr = [];
+                    foreach ($pdoStatement as $row) {
+                        $existLeadsAr [] = $row ['amocrm_lead_id'];
+                    }
+
+                    $sth = DB::getPdo()->prepare('
+                        INSERT INTO `cron_message` SET 
+                        `amocrm_user_id` = :amocrm_user_id,
+                        `amocrm_lead_id` = :amocrm_lead_id,
+                        `amocrm_status_id` = :amocrm_status_id,
+                        `chat_id` = NULL,
+                        `phones` = :phones,
+                        `type` = :type,
+                        `status` = 0,
+                        `created_at` = :created_at,
+                        `updated_at` = :created_at 
+                    ');
+                    foreach ($leadsAr as $userId => $leadAr) {
+                        if (!in_array($leadAr ['lead_id'], $existLeadsAr)){
+                            $sth->execute([
+                                ':amocrm_user_id' => $leadAr ['user_id'],
+                                ':amocrm_lead_id' => $leadAr ['lead_id'],
+                                ':amocrm_status_id' => $leadAr ['status_id'],
+                                ':phones' => $this->processPhones($leadAr ['phones']),
+                                ':type' => self::BILL_SENT,
+                                ':created_at' => $leadAr ['updated_at']->format('Y-m-d H:i:s'),
+                            ]);
+                        }
+                    }
+                }
+            }
         } catch (AmoWrapException $e) {
             TelegramLog::error($e->getMessage());
         }
+    }
 
-
-        /*echo implode('<br />', $leadsAr);
-
-        foreach ($resultAr as $chat_id => $phone) {
-            $data = [
-                'chat_id' => getenv('CHANNEL_CHAT_ID'),
-                'text' => 'Доброй ночи, дорогие клиенты!',
-            ];
+    protected function processPhones($phonesAr) {
+        $phonesEscapedAr = [];
+        if (!empty($phonesAr)) {
+            foreach ($phonesAr as $phoneNum) {
+                $phonesEscapedAr [] = substr(preg_replace('/[^0-9+]/', '', $phoneNum), -10);
+            }
         }
-
-
-        $data = [
-            'chat_id' => getenv('CHANNEL_CHAT_ID'),
-            'text' => $text,
-        ];
-
-        Request::sendMessage($data);*/
+        if (empty($phonesEscapedAr)) {
+            return '';
+        }
+        return implode(',', $phonesEscapedAr);
     }
 }

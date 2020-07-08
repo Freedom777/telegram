@@ -56,13 +56,6 @@ class SurveySuccessCommand extends AdminCommand {
 
     public function execute()
     {
-        /** @var PDOStatement $pdoStatement */
-        $pdoStatement = DB::getPdo()->query('SELECT `user_id`, `text` FROM `message` WHERE `chat_id` = `user_id` AND `entities` LIKE \'%"length":10,"type":"phone_number"%\'', PDO::FETCH_ASSOC);
-        $resultAr = [];
-        foreach ($pdoStatement as $row) {
-            $resultAr [$row['user_id']] = $row ['text'];
-        }
-
         try {
             $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
@@ -102,20 +95,21 @@ class SurveySuccessCommand extends AdminCommand {
                 }
             }
 
-            /** @var PDOStatement $pdoStatement */
-            $pdoStatement = DB::getPdo()->query('
+            if (!empty($leadsAr)) {
+                /** @var PDOStatement $pdoStatement */
+                $pdoStatement = DB::getPdo()->query('
                 SELECT `amocrm_user_id`, `amocrm_lead_id`
                 FROM `cron_message`
                 WHERE `type` = "' . self::SURVEY_FEEDBACK . '" AND `amocrm_status_id` = ' . $statusId .
                     ' AND `created_at` >= "' . $startSearch->format('Y-m-d H:i:s') . '"' .
                     ' AND `created_at` <= "' . $endSearch->format('Y-m-d H:i:s') . '"'
-            , PDO::FETCH_ASSOC);
-            $existUsersAr = [];
-            foreach ($pdoStatement as $row) {
-                $existUsersAr [$row ['amocrm_lead_id']] = $row['amocrm_user_id'];
-            }
+                    , PDO::FETCH_ASSOC);
+                $existUsersAr = [];
+                foreach ($pdoStatement as $row) {
+                    $existUsersAr [$row ['amocrm_lead_id']] = $row['amocrm_user_id'];
+                }
 
-            $sth = DB::getPdo()->prepare('
+                $sth = DB::getPdo()->prepare('
                 INSERT INTO `cron_message` SET 
                 `amocrm_user_id` = :amocrm_user_id,
                 `amocrm_lead_id` = :amocrm_lead_id,
@@ -127,19 +121,19 @@ class SurveySuccessCommand extends AdminCommand {
                 `created_at` = :created_at,
                 `updated_at` = :created_at 
             ');
-            foreach ($leadsAr as $userId => $leadAr) {
-                if (!in_array($leadAr ['user_id'], $existUsersAr)){
-                    $sth->execute([
-                        ':amocrm_user_id' => $leadAr ['user_id'],
-                        ':amocrm_lead_id' => $leadAr ['lead_id'],
-                        ':amocrm_status_id' => $leadAr ['status_id'],
-                        ':phones' => $this->processPhones($leadAr ['phones']),
-                        ':type' => self::SURVEY_FEEDBACK,
-                        ':created_at' => $leadAr ['updated_at']->format('Y-m-d H:i:s'),
-                    ]);
+                foreach ($leadsAr as $userId => $leadAr) {
+                    if (!in_array($leadAr ['user_id'], $existUsersAr)){
+                        $sth->execute([
+                            ':amocrm_user_id' => $leadAr ['user_id'],
+                            ':amocrm_lead_id' => $leadAr ['lead_id'],
+                            ':amocrm_status_id' => $leadAr ['status_id'],
+                            ':phones' => $this->processPhones($leadAr ['phones']),
+                            ':type' => self::SURVEY_FEEDBACK,
+                            ':created_at' => $leadAr ['updated_at']->format('Y-m-d H:i:s'),
+                        ]);
+                    }
                 }
             }
-
 
         } catch (AmoWrapException $e) {
             TelegramLog::error($e->getMessage());
