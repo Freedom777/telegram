@@ -54,12 +54,14 @@ class SurveyFailCommand extends AdminCommand {
 
     const TIMEZONE = 'Europe/Kiev';
 
+    const PIPELINE_ID = 1979362;
+
     public function execute()
     {
         try {
             $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
-            $pipelineId = 1979362; // id Воронки
+            $pipelineId = self::PIPELINE_ID; // id Воронки
             $statusId = 143; // id Статуса: Закрыто и не реализовано
 
             /** @var \DateTime $startSearch */

@@ -54,6 +54,8 @@ class RemindCommand extends AdminCommand {
 
     const TIMEZONE = 'Europe/Kiev';
 
+    const PIPELINE_ID = 1979362;
+
     public function execute()
     {
         /** @var PDOStatement $pdoStatement */
@@ -79,7 +81,7 @@ class RemindCommand extends AdminCommand {
             try {
                 $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
-                $pipelineId = 1979362; // id Воронки
+                $pipelineId = self::PIPELINE_ID; // id Воронки
 
                 /** @var \DateTime $startSearch */
                 $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone(self::TIMEZONE));

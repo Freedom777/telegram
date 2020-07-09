@@ -54,6 +54,8 @@ class BillSentCommand extends AdminCommand {
 
     const TIMEZONE = 'Europe/Kiev';
 
+    const PIPELINE_ID = 1979362;
+
     public function execute()
     {
         $message = $this->getMessage();
@@ -62,7 +64,7 @@ class BillSentCommand extends AdminCommand {
         try {
             $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
-            $pipelineId = 1979362; // id Воронки
+            $pipelineId = self::PIPELINE_ID; // id Воронки
             $statusId = 29361433; // id Статуса: Договор/счет отправлен
 
             /** @var \DateTime $startSearch */
