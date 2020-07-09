@@ -55,6 +55,11 @@ class StatusCommand extends UserCommand
     protected $conversation;
 
     /**
+     * @var bool
+     */
+    protected $private_only = true;
+
+    /**
      * Command execute method
      *
      * @return \Longman\TelegramBot\Entities\ServerResponse
