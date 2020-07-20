@@ -17,9 +17,20 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/vendor/autoload.php';
+define ('BASE_PATH', __DIR__);
+define ('TEMPLATE_PATH', BASE_PATH . DIRECTORY_SEPARATOR . 'Templates');
+define ('SYSTEM_COMMANDS_PATH', BASE_PATH . DIRECTORY_SEPARATOR . 'Commands');
+define ('USER_COMMANDS_PATH', BASE_PATH . DIRECTORY_SEPARATOR . 'UserCommands');
+define ('ADMIN_COMMANDS_PATH', BASE_PATH . DIRECTORY_SEPARATOR . 'AdminCommands');
+define ('UPLOAD_PATH', BASE_PATH . DIRECTORY_SEPARATOR . 'Upload');
+define ('DOWNLOAD_PATH', BASE_PATH . DIRECTORY_SEPARATOR . 'Download');
+define ('LOGS_PATH', BASE_PATH . DIRECTORY_SEPARATOR . 'Logs');
+define ('SITE_NAME', 'tools.ua');
+define ('SITE_NEWS_URL', 'https://tools.ua/');
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+require_once BASE_PATH . DIRECTORY_SEPARATOR .  'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+
+$dotenv = Dotenv\Dotenv::createImmutable(BASE_PATH);
 $dotenv->load();
 
 $botUsername = getenv('BOT_USERNAME');
@@ -34,9 +45,9 @@ $botSettings = [
     'commands' => [
         // Define all paths for your custom commands
         'paths' => [
-            __DIR__ . '/Commands',
-            __DIR__ . '/UserCommands',
-            __DIR__ . '/AdminCommands',
+            SYSTEM_COMMANDS_PATH,
+            USER_COMMANDS_PATH,
+            ADMIN_COMMANDS_PATH,
         ],
         // Here you can set some command specific parameters
         'configs' => [
@@ -75,8 +86,8 @@ $botSettings = [
 
     // Set custom Upload and Download paths
     'paths' => [
-        'download' => __DIR__ . '/Download',
-        'upload' => __DIR__ . '/Upload',
+        'download' => DOWNLOAD_PATH,
+        'upload' => UPLOAD_PATH,
     ],
 
     // Requests Limiter (tries to prevent reaching Telegram API limits)
@@ -96,5 +107,5 @@ if (getenv('BOT_MODE') == 'hook') {
 }
 
 $logger = new Logger('TelegramLogger');
-$logger->pushHandler(new StreamHandler(__DIR__ . DIRECTORY_SEPARATOR . 'Logs' . DIRECTORY_SEPARATOR . 'global.log', Logger::INFO));
+$logger->pushHandler(new StreamHandler(LOGS_PATH . DIRECTORY_SEPARATOR . 'global.log', Logger::INFO));
 TelegramLog::initialize($logger);

@@ -14,6 +14,9 @@ try {
     die($e->getMessage());
 }
 
+var_dump(AmoCRM::getCustomFields('lead'));
+die();
+
 $pipelineId = 1979362; // id Воронки
 $statusId = 142; // id Статуса: Успешно реализовано
 /** @var \DrillCoder\AmoCRM_Wrap\Lead[] $leads */
@@ -22,7 +25,8 @@ $leads = $amo->searchLeads(null, $pipelineId, [$statusId], 0, 0, [], new DateTim
 /** @inherited $lead */
 $leadsAr = [];
 foreach ($leads as $lead) {
-    $leadsAr[] = $lead->getId() . ', ' . $lead->getName() . ': ' . implode(',', $lead->getMainContact()->getPhones());
+    $leadsAr[] = $lead->getId() . ', ' . $lead->g . ': ' . implode(',', $lead->getMainContact()->getPhones());
+    // $leadsAr[] = $lead->getId() . ', ' . $lead->getName() . ': ' . implode(',', $lead->getMainContact()->getPhones());
 }
 echo implode('<br />', $leadsAr);
 // var_dump($result);
