@@ -69,31 +69,62 @@ class TestCommand extends AdminCommand {
         //Conversation start
         $this->conversation = new Conversation($chat_id, $chat_id, $this->getName());
 
-        // $result = Request::emptyResponse();
-        if ($text === '' || !in_array($text, $answers, true)) {
-            $this->conversation->update();
+        $notes = &$this->conversation->notes;
+        !is_array($notes) && $notes = [];
 
-            $data['reply_markup'] = (new Keyboard($answers))
-                ->setResizeKeyboard(true)
-                ->setOneTimeKeyboard(true)
-                ->setSelective(true);
-
-            $data ['text'] = $question;
-            if ($text !== '') {
-                $data ['text'] = $question;
-            }
-
-            Request::sendMessage($data);
+        //cache data from the tracking session if any
+        $state = 0;
+        if (isset($notes['state'])) {
+            $state = $notes['state'];
         }
 
-        $this->conversation->stop();
+        $result = Request::emptyResponse();
 
-        $data = [
-            'reply_markup' => Keyboard::remove(['selective' => true]),
-            'chat_id' => $chat_id,
-            'text' => 'Спасибо за обратную связь, Вы выбрали ' . $text,
-        ];
+        //State machine
+        //Entrypoint of the machine state if given by the track
+        //Every time a step is achieved the track is updated
+        switch ($state) {
+            case 0:
+                $this->conversation->update();
 
-        Request::sendMessage($data);
+                if ($text === '' || !in_array($text, $answers, true)) {
+                    $this->conversation->update();
+
+                    $data['reply_markup'] = (new Keyboard($answers))
+                        ->setResizeKeyboard(true)
+                        ->setOneTimeKeyboard(true)
+                        ->setSelective(true);
+
+                    $data ['text'] = $question;
+                    if ($text !== '') {
+                        $data ['text'] = $question;
+                    }
+
+                    $result = Request::sendMessage($data);
+                    break;
+                }
+
+                $notes ['surveysuccess'] = $text;
+                $text = '';
+
+            case 1:
+                if ($text === '') {
+                    $notes['state'] = 1;
+                    $this->conversation->update();
+                    unset($notes['state']);
+
+                    $data = [
+                        'reply_markup' => Keyboard::remove(['selective' => true]),
+                        'chat_id' => $chat_id,
+                        'text' => 'Спасибо за обратную связь, Вы выбрали ' . $notes ['surveysuccess'],
+                    ];
+
+                    $this->conversation->stop();
+                    $result = Request::sendMessage($data);
+                }
+                break;
+        }
+
+        return $result;
     }
 }
