@@ -85,9 +85,8 @@ class TestCommand extends AdminCommand {
         //Every time a step is achieved the track is updated
         switch ($state) {
             case 0:
-                $this->conversation->update();
-
                 if ($text === '' || !in_array($text, $answers, true)) {
+                    $notes['state'] = 0;
                     $this->conversation->update();
 
                     $data['reply_markup'] = (new Keyboard($answers))
@@ -109,15 +108,14 @@ class TestCommand extends AdminCommand {
 
             case 1:
                 if ($text === '') {
-                    $notes['state'] = 1;
+                    $notes ['state'] = 1;
                     $this->conversation->update();
-                    unset($notes['state']);
+                    unset($notes ['state']);
 
-                    $data = [
+                    $data = array_merge($data, [
                         'reply_markup' => Keyboard::remove(['selective' => true]),
-                        'chat_id' => $chat_id,
                         'text' => 'Спасибо за обратную связь, Вы выбрали ' . $notes ['surveysuccess'],
-                    ];
+                    ]);
 
                     $this->conversation->stop();
                     $result = Request::sendMessage($data);

@@ -11,6 +11,7 @@
 namespace Longman\TelegramBot\Commands\SystemCommands;
 
 use Longman\TelegramBot\Commands\SystemCommand;
+use Longman\TelegramBot\Commands\UserCommands\CatalogCommand;
 use Longman\TelegramBot\Commands\UserCommands\StatusCommand;
 use Longman\TelegramBot\Entities\Update;
 use Longman\TelegramBot\Request;
