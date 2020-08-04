@@ -12,7 +12,7 @@ namespace Longman\TelegramBot\Commands\UserCommands;
 
 use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use DrillCoder\AmoCRM_Wrap\AmoWrapException;
-use Longman\TelegramBot\Commands\UserCommand;
+use Models\UserCommand;
 use Longman\TelegramBot\Conversation;
 use Longman\TelegramBot\DB;
 use Longman\TelegramBot\Entities\Keyboard;
@@ -60,6 +60,21 @@ class StatusCommand extends UserCommand
     protected $private_only = true;
 
     /**
+     * @var int
+     */
+    protected $chat_id;
+
+    /**
+     * @var int
+     */
+    protected $user_id;
+
+    /**
+     * @var string
+     */
+    protected $text;
+
+    /**
      * Command execute method
      *
      * @return \Longman\TelegramBot\Entities\ServerResponse
@@ -67,126 +82,25 @@ class StatusCommand extends UserCommand
      */
     public function execute()
     {
-        $message = $this->getMessage();
-        $chat    = $message->getChat();
-        $user    = $message->getFrom();
-
-        $chat_id = $chat->getId();
-        $user_id = $user->getId();
+        $this->prepareInput();
 
         //Preparing Response
         $data = [
-            'chat_id' => $chat_id,
+            'chat_id' => $this->chat_id,
         ];
         $answerText = '';
 
-        $text    = trim($message->getText(true));
-
-        //Conversation start
-        $this->conversation = new Conversation($user_id, $chat_id, $this->getName());
-
-        $notes = &$this->conversation->notes;
-        !is_array($notes) && $notes = [];
-
-        //cache data from the tracking session if any
-        $state = 0;
-        if (isset($notes['state'])) {
-            $state = $notes['state'];
+        if (!empty($_SESSION ['user'])) {
+            $leads = $_SESSION ['user'] ['leads'];
+            foreach ($leads as $leadName => $leadStatusName) {
+                $answerText .= $leadName . ' : ' . $leadStatusName . PHP_EOL;
+            }
+        } else {
+            $answerText = 'Введите /start для авторизации.';
         }
 
-        $result = Request::emptyResponse();
-
-        switch ($state) {
-            case 0:
-                if ($text === '') {
-                    $notes['state'] = 0;
-                    $this->conversation->update();
-
-                    $data['text'] = 'Введите номер телефона (10 цифр):';
-                    $data['reply_markup'] = Keyboard::remove(['selective' => true]);
-
-                    $result = Request::sendMessage($data);
-                    break;
-                }
-
-                $notes['phone'] = $text;
-                $text = '';
-
-            case 1:
-                $phone = $notes['phone'];
-                if ($phone !== '' && is_numeric($phone) && 10 == strlen($phone)) {
-                    $notes['state'] = 1;
-                    $this->conversation->update();
-                    try {
-                        $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
-                    } catch (AmoWrapException $e) {
-                        $answerText = 'Ошибка при подключении к хранилищу.';
-                    }
-
-                    if (empty($answerText)) {
-                        /*// Получаем список воронок
-                        $pipelines = AmoCRM::getPipelinesName();
-
-                        // Берем id первой воронки
-                        $pipelineId = key($pipelines);
-
-                        // Получаем список статусов
-                        $statuses = AmoCRM::getStatusesName($pipelineId);*/
-
-                        $contacts =  $amo->searchContacts($phone); //Ищем контакт по телефону и почте
-                        if (!empty($contacts)) {
-                            $contact = current($contacts);
-
-                            // Update table
-                            if ($user_id == $chat_id) { // Private chat
-                                $amocrm_user_id = $contact->getId();
-
-                                /** @var \PDOStatement $pdoStatement */
-                                $sth = DB::getPdo()->prepare('
-                                    SELECT `phone`
-                                    FROM `amocrm_user`
-                                    WHERE `chat_id` = :chat_id AND `amocrm_user_id` = :amocrm_user_id
-                                    ORDER BY `id` DESC
-                                    LIMIT 1'
-                                );
-                                $sth->execute([
-                                    ':chat_id' => $chat_id,
-                                    ':amocrm_user_id' => $amocrm_user_id,
-                                ]);
-                                $exist = $sth->fetch(\PDO::FETCH_ASSOC);
-                                if (empty($exist) || $phone != $exist ['phone']) {
-                                    $sth = DB::getPdo()->prepare('
-                                        INSERT INTO `amocrm_user` SET
-                                        `chat_id` = :chat_id, 
-                                        `amocrm_user_id` = :amocrm_user_id,
-                                        `phone` = :phone
-                                    ');
-                                    $sth->execute([
-                                        ':chat_id' => $chat_id,
-                                        ':amocrm_user_id' => $amocrm_user_id,
-                                        ':phone' => $phone,
-                                    ]);
-                                }
-                            }
-
-                            $leads = $contact->getLeads();
-                            if (!empty($leads)) {
-                                foreach ($leads as $lead) {
-                                    $answerText .= $lead->getName() . ' : ' . $lead->getStatusName() . PHP_EOL;
-                                }
-                            }
-                        } else {
-                            $answerText = 'Контакт не найден.';
-                        }
-                    }
-                    $this->conversation->stop();
-                } else {
-                    $answerText = 'Вы должны указать 10 цифр в качестве номера телефона.';
-                    $notes['state'] = 0;
-                }
-                $data['text'] = $answerText;
-                $result = Request::sendMessage($data);
-        }
+        $data ['text'] = $answerText;
+        $result = Request::sendMessage($data);
 
         return $result;
     }
