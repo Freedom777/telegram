@@ -168,6 +168,7 @@ class StartCommand extends UserCommand
                 if ($this->text === '') {
                     $this->notes ['state'] = 2;
                     $this->conversation->update();
+
                     $data ['reply_markup'] = (new InlineKeyboard([
                         new InlineKeyboardButton(['callback_data' => '/status', 'text' => self::MENU_ORDER_STATUS]),
                         new InlineKeyboardButton(['callback_data' => '/history', 'text' => self::MENU_HISTORY]),
