@@ -88,15 +88,28 @@ class StatusCommand extends UserCommand
         $data = [
             'chat_id' => $this->chat_id,
         ];
-        $answerText = '';
+        $answerText = 'Введите /start для авторизации.';
+        $phone = $this->getUserPhone($this->user_id);
 
-        if (!empty($_SESSION ['user'])) {
-            $leads = $_SESSION ['user'] ['leads'];
-            foreach ($leads as $leadName => $leadStatusName) {
-                $answerText .= $leadName . ' : ' . $leadStatusName . PHP_EOL;
+        if (!empty($phone)) {
+            try {
+                $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
+            } catch (AmoWrapException $e) {
+                $answerText = self::ERROR_AMOCRM;
             }
-        } else {
-            $answerText = 'Введите /start для авторизации.';
+
+            $contacts = $amo->searchContacts($phone); // Ищем контакт по телефону и почте
+            if (!empty($contacts)) {
+                $contact = current($contacts);
+                $leads = $contact->getLeads();
+
+                $answerText = '';
+                if (!empty($leads)) {
+                    foreach ($leads as $lead) {
+                        $answerText .= $lead->getName() . ' : ' . $lead->getStatusName() . PHP_EOL;
+                    }
+                }
+            }
         }
 
         $data ['text'] = $answerText;

@@ -130,25 +130,10 @@ class StartCommand extends UserCommand
                     }
 
                     if (empty($answerText)) {
-                        $contacts =  $amo->searchContacts($phone); //Ищем контакт по телефону и почте
+                        $contacts =  $amo->searchContacts($phone); // Ищем контакт по телефону и почте
                         if (!empty($contacts)) {
                             $contact = current($contacts);
                             $this->checkInsertUser($phone, $contact->getId());
-
-                            $leads = $contact->getLeads();
-                            $this->notes ['leads'] = [];
-                            if (!empty($leads)) {
-                                foreach ($leads as $lead) {
-                                    $this->notes ['leads'] [$lead->getName()] = $lead->getStatusName();
-                                    // $answerText .= $lead->getName() . ' : ' . $lead->getStatusName() . PHP_EOL;
-                                }
-                            }
-
-                            $_SESSION ['user'] = [
-                                'phone' => $phone,
-                                'userId' => $contact->getId(),
-                                'leads' => $this->notes ['leads'],
-                            ];
 
                             $answerText = self::SUCCESS_LOGIN;
 
