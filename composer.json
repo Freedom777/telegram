@@ -10,5 +10,10 @@
     "vlucas/phpdotenv": "^4.1",
     "monolog/monolog": "^2.0",
     "drillcoder/amocrm_wrap": "^7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Models\\": "Models/"
+    }
   }
 }
