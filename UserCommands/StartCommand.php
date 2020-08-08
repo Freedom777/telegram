@@ -152,6 +152,16 @@ class StartCommand extends UserCommand
 
                             $answerText = self::SUCCESS_LOGIN;
 
+                            // При успешной авторизации вывод меню
+                            $data ['reply_markup'] = (new InlineKeyboard([
+                                new InlineKeyboardButton(['callback_data' => '/status', 'text' => self::MENU_ORDER_STATUS]),
+                                new InlineKeyboardButton(['callback_data' => '/history', 'text' => self::MENU_HISTORY]),
+                                new InlineKeyboardButton(['callback_data' => '/catalog', 'text' => self::MENU_CATALOG]),
+                            ]))
+                                ->setResizeKeyboard(true)
+                                ->setOneTimeKeyboard(true)
+                                ->setSelective(true);
+
                         } else {
                             $answerText = self::ERROR_PHONE_NOT_FOUND;
                             $this->conversation->stop();
@@ -163,45 +173,23 @@ class StartCommand extends UserCommand
                 }
                 $data ['text'] = $answerText;
                 $result = Request::sendMessage($data);
+
             case 2:
-                // При успешной авторизации вывод меню
-                if ($this->text === '') {
+                // Запуск команды из меню
+                if ($this->text != '') {
+                    $choice = $this->text;
+
                     $this->notes ['state'] = 2;
                     $this->conversation->update();
 
-                    $data ['reply_markup'] = (new InlineKeyboard([
-                        new InlineKeyboardButton(['callback_data' => '/status', 'text' => self::MENU_ORDER_STATUS]),
-                        new InlineKeyboardButton(['callback_data' => '/history', 'text' => self::MENU_HISTORY]),
-                        new InlineKeyboardButton(['callback_data' => '/catalog', 'text' => self::MENU_CATALOG]),
-                    ]))
-                        ->setResizeKeyboard(true)
-                        ->setOneTimeKeyboard(true)
-                        ->setSelective(true);
-
-                    $result = Request::sendMessage($data);
-                }
-
-                $this->notes ['choice'] = $this->text;
-                $this->text = '';
-
-                $result = Request::sendMessage($data);
-
-            case 3:
-                $choice = $this->notes ['choice'];
-                if ($choice !== '') {
-                    $this->notes ['state'] = 3;
-                    $this->conversation->update();
                     switch ($choice) {
                         case self::MENU_ORDER_STATUS:
                             $this->notes ['choice'] = '/status';
                             $this->conversation->stop();
                             $result = $this->getTelegram()->executeCommand('status');
-                        // $result = (new StatusCommand($this->getTelegram()))->execute();
-                        break;
+                            // $result = (new StatusCommand($this->getTelegram()))->execute();
+                            break;
                     }
-                    // $data['text'] = $choice;
-                    // $result = Request::sendMessage($data);
-
                 }
         }
 
