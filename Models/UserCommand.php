@@ -24,6 +24,7 @@ abstract class UserCommand extends UserCommandBase {
     const ERROR_AMOCRM = 'Ошибка при подключении к хранилищу.';
     const ERROR_PHONE_NOT_FOUND = 'Не найден телефон в базе.';
     const SUCCESS_LOGIN = 'Успешная авторизация.';
+    const LEADS_NOT_FOUND = 'Сделок не найдено.';
 
     const MENU_ORDER_STATUS = 'Статус заказа';
     const MENU_HISTORY = 'История заказов';

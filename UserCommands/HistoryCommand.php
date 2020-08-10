@@ -17,27 +17,27 @@ use Models\UserCommand;
 use Longman\TelegramBot\Request;
 
 /**
- * User "/status" command
+ * User "/history" command
  *
  * Get status info for any place.
  * This command requires an API key to be set via command config.
  */
-class StatusCommand extends UserCommand
+class HistoryCommand extends UserCommand
 {
     /**
      * @var string
      */
-    protected $name = 'status';
+    protected $name = 'history';
 
     /**
      * @var string
      */
-    protected $description = 'Show status by phone';
+    protected $description = 'Show history by phone';
 
     /**
      * @var string
      */
-    protected $usage = '/status';
+    protected $usage = '/history';
 
     /**
      * @var string
@@ -63,11 +63,6 @@ class StatusCommand extends UserCommand
      * @var string
      */
     protected $text;
-
-    /**
-     * @const array
-     */
-    const STATUSES_NOT_SHOW = [142, 143];
 
     /**
      * Command execute method
@@ -101,7 +96,8 @@ class StatusCommand extends UserCommand
                 $answerText = '';
                 if (!empty($leads)) {
                     foreach ($leads as $lead) {
-                        if (!in_array($lead->getStatusId(), self::STATUSES_NOT_SHOW)) {
+                        // Вывод всех сделок в текущем году
+                        if ($lead->getDateCreate()->format('Y') == date('Y')) {
                             $answerText .= $lead->getName() . ' : ' . $lead->getStatusName() . PHP_EOL;
                         }
                     }

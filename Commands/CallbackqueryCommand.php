@@ -59,15 +59,23 @@ class CallbackqueryCommand extends SystemCommand
         $update['message']['text'] = $callback_data;
         $update['message']['from']['id'] = $update['callback_query']['from']['id'];
 
+        $result = false;
         switch ($callback_data) {
             case '/status':
-                return (new StatusCommand($this->telegram, new Update($update)))->preExecute();
+                $result = $this->getTelegram()->executeCommand('status');
+                // return (new StatusCommand($this->telegram, new Update($update)))->preExecute();
                 break;
             case '/catalog':
-                return (new CatalogCommand($this->telegram, new Update($update)))->preExecute();
+                $result = $this->getTelegram()->executeCommand('catalog');
+                // return (new CatalogCommand($this->telegram, new Update($update)))->preExecute();
                 break;
+            case '/history':
+                $result = $this->getTelegram()->executeCommand('history');
+                break;
+
         }
 
+        return $result;
 
 
         /*$data = [
