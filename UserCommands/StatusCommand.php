@@ -13,6 +13,7 @@ namespace Longman\TelegramBot\Commands\UserCommands;
 use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use DrillCoder\AmoCRM_Wrap\AmoWrapException;
 use DrillCoder\AmoCRM_Wrap\Contact;
+use Longman\TelegramBot\TelegramLog;
 use Models\UserCommand;
 use Longman\TelegramBot\Request;
 
@@ -100,6 +101,7 @@ class StatusCommand extends UserCommand
 
                 $answerText = '';
                 if (!empty($leads)) {
+                    TelegramLog::info(var_export($leads, true));
                     foreach ($leads as $lead) {
                         if (!in_array($lead->getStatusId(), self::STATUSES_NOT_SHOW)) {
                             $answerText .= $lead->getName() . ' : ' . $lead->getStatusName() . PHP_EOL;
