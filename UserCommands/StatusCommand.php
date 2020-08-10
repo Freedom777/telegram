@@ -101,13 +101,13 @@ class StatusCommand extends UserCommand
 
                 $answerText = '';
                 if (!empty($leads)) {
-                    TelegramLog::info(var_export($leads, true));
                     foreach ($leads as $lead) {
                         if (!in_array($lead->getStatusId(), self::STATUSES_NOT_SHOW)) {
                             $answerText .= $lead->getName() . ' : ' . $lead->getStatusName() . PHP_EOL;
                         }
                     }
-                } else {
+                }
+                if (empty($answerText)) {
                     $answerText .= self::LEADS_NOT_FOUND;
                 }
             }

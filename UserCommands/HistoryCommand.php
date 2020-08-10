@@ -101,7 +101,8 @@ class HistoryCommand extends UserCommand
                             $answerText .= $lead->getName() . ' : ' . $lead->getStatusName() . PHP_EOL;
                         }
                     }
-                } else {
+                }
+                if (empty($answerText)) {
                     $answerText .= self::LEADS_NOT_FOUND;
                 }
             }
