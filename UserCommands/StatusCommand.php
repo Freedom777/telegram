@@ -12,6 +12,7 @@ namespace Longman\TelegramBot\Commands\UserCommands;
 
 use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use DrillCoder\AmoCRM_Wrap\AmoWrapException;
+use DrillCoder\AmoCRM_Wrap\Contact;
 use Models\UserCommand;
 use Longman\TelegramBot\Conversation;
 use Longman\TelegramBot\DB;
@@ -90,20 +91,17 @@ class StatusCommand extends UserCommand
         ];
         $answerText = 'Введите /start для авторизации.';
 
-        TelegramLog::info('userId = ' . $this->user_id . ', chatId = ' . $this->chat_id);
-        $phone = $this->getUserPhone($this->user_id);
-        TelegramLog::info($phone);
+        $amocrmUserId = $this->getContactIdByChatId($this->user_id);
 
-        if (!empty($phone)) {
+        if (!empty($amocrmUserId)) {
             try {
                 $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
             } catch (AmoWrapException $e) {
                 $answerText = self::ERROR_AMOCRM;
             }
 
-            $contacts = $amo->searchContacts($phone); // Ищем контакт по телефону и почте
-            if (!empty($contacts)) {
-                $contact = current($contacts);
+            $contact = new Contact($amocrmUserId);
+            if (!empty($contact)) {
                 $leads = $contact->getLeads();
 
                 $answerText = '';

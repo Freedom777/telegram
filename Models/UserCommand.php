@@ -101,22 +101,48 @@ abstract class UserCommand extends UserCommandBase {
         }
     }
 
-    protected function getUserPhone($userId) {
+    /**
+     * @param int $chatId
+     *
+     * @return false|string
+     */
+    protected function getUserPhone($chatId) {
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare('
                                     SELECT `phone`
                                     FROM `amocrm_user`
-                                    WHERE `user_id` = :chat_id AND `chat_id` = :chat_id
+                                    WHERE `chat_id` = :chat_id
                                     ORDER BY `id` DESC
                                     LIMIT 1'
         );
         $sth->execute([
-            ':chat_id' => $userId,
+            ':chat_id' => $chatId,
         ]);
 
         $exist = $sth->fetch(\PDO::FETCH_ASSOC);
         if (!empty($exist) && !empty($exist ['phone'])) {
             return $exist ['phone'];
+        }
+
+        return false;
+    }
+
+    protected function getContactIdByChatId($chatId) {
+        /** @var \PDOStatement $pdoStatement */
+        $sth = DB::getPdo()->prepare('
+                                    SELECT `amocrm_user_id`
+                                    FROM `amocrm_user`
+                                    WHERE `chat_id` = :chat_id
+                                    ORDER BY `id` DESC
+                                    LIMIT 1'
+        );
+        $sth->execute([
+            ':chat_id' => $chatId,
+        ]);
+
+        $exist = $sth->fetch(\PDO::FETCH_ASSOC);
+        if (!empty($exist) && !empty($exist ['amocrm_user_id'])) {
+            return $exist ['amocrm_user_id'];
         }
 
         return false;
