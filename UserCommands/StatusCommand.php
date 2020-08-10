@@ -107,7 +107,7 @@ class StatusCommand extends UserCommand
                         }
                     }
                 }
-                if (empty($answerText)) {
+                if ('' === $answerText) {
                     $answerText .= self::LEADS_NOT_FOUND;
                 }
             }
