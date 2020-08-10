@@ -89,7 +89,10 @@ class StatusCommand extends UserCommand
             'chat_id' => $this->chat_id,
         ];
         $answerText = 'Введите /start для авторизации.';
+
+        TelegramLog::info('userId = ' . $this->user_id . ', chatId = ' . $this->chat_id);
         $phone = $this->getUserPhone($this->user_id);
+        TelegramLog::info($phone);
 
         if (!empty($phone)) {
             try {
