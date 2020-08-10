@@ -106,7 +106,7 @@ abstract class UserCommand extends UserCommandBase {
         $sth = DB::getPdo()->prepare('
                                     SELECT `phone`
                                     FROM `amocrm_user`
-                                    WHERE `user_id` = :chat_id` AND `chat_id` = :chat_id
+                                    WHERE `user_id` = :chat_id AND `chat_id` = :chat_id
                                     ORDER BY `id` DESC
                                     LIMIT 1'
         );
