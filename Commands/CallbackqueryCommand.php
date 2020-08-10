@@ -12,6 +12,7 @@ namespace Longman\TelegramBot\Commands\SystemCommands;
 
 use Longman\TelegramBot\Commands\SystemCommand;
 use Longman\TelegramBot\Commands\UserCommands\CatalogCommand;
+use Longman\TelegramBot\Commands\UserCommands\HistoryCommand;
 use Longman\TelegramBot\Commands\UserCommands\StatusCommand;
 use Longman\TelegramBot\Entities\Update;
 use Longman\TelegramBot\Request;
@@ -62,15 +63,16 @@ class CallbackqueryCommand extends SystemCommand
         $result = false;
         switch ($callback_data) {
             case '/status':
-                $result = $this->getTelegram()->executeCommand('status');
-                // return (new StatusCommand($this->telegram, new Update($update)))->preExecute();
+                // $result = $this->getTelegram()->executeCommand('status');
+                $result = (new StatusCommand($this->telegram, new Update($update)))->preExecute();
                 break;
             case '/catalog':
-                $result = $this->getTelegram()->executeCommand('catalog');
-                // return (new CatalogCommand($this->telegram, new Update($update)))->preExecute();
+                // $result = $this->getTelegram()->executeCommand('catalog');
+                $result = (new CatalogCommand($this->telegram, new Update($update)))->preExecute();
                 break;
             case '/history':
-                $result = $this->getTelegram()->executeCommand('history');
+                $result = (new HistoryCommand($this->telegram, new Update($update)))->preExecute();
+                // $result = $this->getTelegram()->executeCommand('history');
                 break;
 
         }
