@@ -21,14 +21,17 @@ abstract class UserCommand extends UserCommandBase {
     const STATUS_TO_SEND = 0;
     const STATUS_SENT = 1;
 
+    const INVITE_LINK = 'https://t.me/joinchat/AAAAAFYbg0VE3uan1UOPfw';
+
     const ERROR_AMOCRM = 'Ошибка при подключении к хранилищу.';
-    const ERROR_PHONE_NOT_FOUND = 'Не найден телефон в базе.';
+    const ERROR_PHONE_NOT_FOUND = 'Ваш номер не найден. Для уточнения статуса заказов свяжитесь с менеджером';
     const SUCCESS_LOGIN = 'Успешная авторизация.';
     const LEADS_NOT_FOUND = 'Сделок не найдено.';
 
     const MENU_ORDER_STATUS = 'Статус заказа';
     const MENU_HISTORY = 'История заказов';
     const MENU_CATALOG = 'Каталог';
+    const MENU_NEWS_CHANNEL = 'Рассказывать о новостях';
 
 
     protected function getState() {

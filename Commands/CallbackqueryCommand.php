@@ -62,6 +62,10 @@ class CallbackqueryCommand extends SystemCommand
 
         $result = false;
         switch ($callback_data) {
+            /*case 'channel':
+                @Likant - инструмент
+                $result = $this->getTelegram()->executeCommand('status');
+                break;*/
             case '/status':
                 // $result = $this->getTelegram()->executeCommand('status');
                 $result = (new StatusCommand($this->telegram, new Update($update)))->preExecute();

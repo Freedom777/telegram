@@ -142,6 +142,7 @@ class StartCommand extends UserCommand
                                 new InlineKeyboardButton(['callback_data' => '/status', 'text' => self::MENU_ORDER_STATUS]),
                                 new InlineKeyboardButton(['callback_data' => '/history', 'text' => self::MENU_HISTORY]),
                                 new InlineKeyboardButton(['callback_data' => '/catalog', 'text' => self::MENU_CATALOG]),
+                                new InlineKeyboardButton(['url' => getenv('CHANNEL_INVITE_LINK'), 'text' => self::MENU_NEWS_CHANNEL]),
                             ]))
                                 ->setResizeKeyboard(true)
                                 ->setOneTimeKeyboard(true)
