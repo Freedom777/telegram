@@ -28,33 +28,38 @@ class RemindOrderCronCommand extends AdminCommand {
 
     public function execute()
     {
-        /** @var PDOStatement $pdoStatement */
-        $pdoStatement = DB::getPdo()->query('
-            SELECT `amocrm_user_id`, `chat_id`, `phone`
-            FROM `amocrm_user`
-            GROUP BY `amocrm_user_id`
-            ORDER BY `id` DESC'
-        , PDO::FETCH_ASSOC);
-        $amocrmUsersAr = [];
-        foreach ($pdoStatement as $row) {
-            $amocrmUsersAr [(int) $row['amocrm_user_id']] = [
-                'chat_id' => (int) $row ['chat_id'],
-                'phone' => $row ['phone']
-            ];
-        }
+
         /*$pdoStatement = DB::getPdo()->query('SELECT `user_id`, `text` FROM `message` WHERE `chat_id` = `user_id` AND `entities` LIKE \'%"length":10,"type":"phone_number"%\'', PDO::FETCH_ASSOC);
         $resultAr = [];
         foreach ($pdoStatement as $row) {
             $resultAr [$row['user_id']] = $row ['text'];
         }*/
-        if (!empty($amocrmUsersAr)) {
-            try {
+        $dateTimeZone = new \DateTimeZone(self::TIMEZONE);
+
+        try {
+            /** @var PDOStatement $pdoStatement */
+            $pdoStatement = DB::getPdo()->query('
+                SELECT `amocrm_user_id`, `chat_id`, `phone`
+                FROM `amocrm_user`
+                GROUP BY `amocrm_user_id`
+                ORDER BY `id` DESC'
+                , PDO::FETCH_ASSOC);
+            $amocrmUsersAr = [];
+            foreach ($pdoStatement as $row) {
+                $amocrmUsersAr [(int) $row['amocrm_user_id']] = [
+                    'chat_id' => (int) $row ['chat_id'],
+                    'phone' => $row ['phone']
+                ];
+            }
+
+            if (!empty($amocrmUsersAr)) {
+
                 $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
                 $pipelineId = self::PIPELINE_ID; // id Воронки
 
                 /** @var \DateTime $startSearch */
-                $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone(self::TIMEZONE));
+                $startSearch = new \DateTime(date('Y-m-d 00:00:00'), $dateTimeZone);
                 $startSearch->modify('-' . getenv('AMOCRM_SUCCESS_ORDER_REMINDER_DAYS') . ' days');
 
                 /** @var \DrillCoder\AmoCRM_Wrap\Lead[] $leads */
@@ -63,7 +68,7 @@ class RemindOrderCronCommand extends AdminCommand {
                 $leadUsersAr = [];
                 /** @inherited $lead */
                 foreach ($leads as $lead) {
-                    $leadUsersAr [(int) $lead->getMainContactId()] = (int) $lead->getMainContactId();
+                    $leadUsersAr [(int)$lead->getMainContactId()] = (int)$lead->getMainContactId();
                 }
                 $amocrmUsersAr = array_diff_key($amocrmUsersAr, $leadUsersAr);
 
@@ -76,7 +81,7 @@ class RemindOrderCronCommand extends AdminCommand {
                     `chat_id` = :chat_id,
                     `phones` = :phones,
                     `type` = :type,
-                    `status` = 0,
+                    `status` = ' . self::STATUS_TO_SEND . ',
                     `created_at` = NOW(),
                     `updated_at` = NOW() 
                 ');
@@ -84,15 +89,49 @@ class RemindOrderCronCommand extends AdminCommand {
                         $sth->execute([
                             ':amocrm_user_id' => $amocrmUserId,
                             ':chat_id' => $chatAr ['chat_id'],
-                            ':phones' =>  $chatAr ['phone'],
+                            ':phones' => $chatAr ['phone'],
                             ':type' => self::REMIND_NO_ORDER,
                         ]);
                     }
                 }
-            } catch (AmoWrapException $e) {
-                TelegramLog::error($e->getMessage());
             }
+
+            // Update status 14 days messages to every 30 days send
+            $remindAgainDays = ('-' . getenv('AMOCRM_SUCCESS_ORDER_AGAIN_REMIND_DAYS') . ' days');
+            /** @var \DateTime $startSearch */
+            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), $dateTimeZone);
+            $startSearch->modify($remindAgainDays);
+
+            $endSearch = new \DateTime(date('Y-m-d 23:59:59'), $dateTimeZone);
+            $endSearch->modify($remindAgainDays);
+
+            $pdoStatement = DB::getPdo()->query('
+                SELECT `id` FROM  `cron_message`
+                WHERE `type` = "' . self::REMIND_NO_ORDER . '"
+                  AND `amocrm_status_id` = NULL' .
+                ' AND `status` IN (' . self::STATUS_SENT . ',' . self::STATUS_REMINDED . ')' .
+                ' AND `created_at` >= "' . $startSearch->format('Y-m-d H:i:s') . '"' .
+                ' AND `created_at` <= "' . $endSearch->format('Y-m-d H:i:s') . '"'
+                , PDO::FETCH_ASSOC);
+
+            $messagesAr = [];
+            foreach ($pdoStatement as $row) {
+                $messagesAr [] = $row ['id'];
+            }
+            if (!empty($messagesAr)) {
+                $sth = DB::getPdo()->prepare('
+                    UPDATE `cron_message` SET 
+                        `status` = ' . self::STATUS_REMIND . ',
+                        `updated_at` = NOW()
+                    WHERE `id` IN (' . implode(',', $messagesAr) . ')
+                ');
+                $sth->execute($sth);
+            }
+        } catch (AmoWrapException $e) {
+            TelegramLog::error($e->getMessage());
         }
+
+
 
 
 

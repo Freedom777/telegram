@@ -36,6 +36,8 @@ abstract class AdminCommand extends AdminCommandBase {
 
     const STATUS_TO_SEND = 0;
     const STATUS_SENT = 1;
+    const STATUS_REMIND = 2;
+    const STATUS_REMINDED = 3;
 
     protected function processPhones($phonesAr) {
         $phonesEscapedAr = [];

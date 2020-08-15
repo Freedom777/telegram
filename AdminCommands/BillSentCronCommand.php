@@ -31,19 +31,20 @@ class BillSentCronCommand extends AdminCommand
     {
         $message = $this->getMessage();
         $text = trim($message->getText(true));
+        $dateTimeZone = new \DateTimeZone(self::TIMEZONE);
+        $pipelineId = self::PIPELINE_ID; // id Воронки
+        $statusId = 29361433; // id Статуса: Договор/счет отправлен
 
         try {
             $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
-            $pipelineId = self::PIPELINE_ID; // id Воронки
-            $statusId = 29361433; // id Статуса: Договор/счет отправлен
-
+            $reminderDays = '-' . getenv('AMOCRM_BILL_SENT_REMINDER_DAYS') . ' days';
             /** @var \DateTime $startSearch */
-            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone(self::TIMEZONE));
-            $startSearch->modify('-' . getenv('AMOCRM_BILL_SENT_REMINDER_DAYS') . ' days');
+            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), $dateTimeZone);
+            $startSearch->modify($reminderDays);
 
-            $endSearch = new \DateTime(date('Y-m-d 23:59:59'), new \DateTimeZone(self::TIMEZONE));
-            $endSearch->modify('-' . getenv('AMOCRM_BILL_SENT_REMINDER_DAYS') . ' days');
+            $endSearch = new \DateTime(date('Y-m-d 23:59:59'), $dateTimeZone);
+            $endSearch->modify($reminderDays);
 
             /** @var \DrillCoder\AmoCRM_Wrap\Lead[] $leads */
             $leads = $amo->searchLeads(null, $pipelineId, [], 0, 0, [], $startSearch);
@@ -96,7 +97,7 @@ class BillSentCronCommand extends AdminCommand
                         `chat_id` = NULL,
                         `phones` = :phones,
                         `type` = :type,
-                        `status` = 0,
+                        `status` = ' . self::STATUS_TO_SEND . ',
                         `created_at` = :created_at,
                         `updated_at` = :created_at 
                     ');
@@ -114,6 +115,39 @@ class BillSentCronCommand extends AdminCommand
                     }
                 }
             }
+
+            // Update status 3 days messages to 10 days expiring
+            $remindAgainDays = ('-' . getenv('AMOCRM_BILL_SENT_AGAIN_REMIND_DAYS') - getenv('AMOCRM_BILL_SENT_REMINDER_DAYS') . ' days');
+            /** @var \DateTime $startSearch */
+            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), $dateTimeZone);
+            $startSearch->modify($remindAgainDays);
+
+            $endSearch = new \DateTime(date('Y-m-d 23:59:59'), $dateTimeZone);
+            $endSearch->modify($remindAgainDays);
+
+            $pdoStatement = DB::getPdo()->query('
+                SELECT `id` FROM  `cron_message`
+                WHERE `type` = "' . self::BILL_SENT . '"
+                  AND `amocrm_status_id` = ' . $statusId .
+                ' AND `status` = ' . self::STATUS_SENT .
+                ' AND `created_at` >= "' . $startSearch->format('Y-m-d H:i:s') . '"' .
+                ' AND `created_at` <= "' . $endSearch->format('Y-m-d H:i:s') . '"'
+                , PDO::FETCH_ASSOC);
+
+            $messagesAr = [];
+            foreach ($pdoStatement as $row) {
+                $messagesAr [] = $row ['id'];
+            }
+            if (!empty($messagesAr)) {
+                $sth = DB::getPdo()->prepare('
+                    UPDATE `cron_message` SET 
+                        `status` = ' . self::STATUS_REMIND . ',
+                        `updated_at` = NOW()
+                    WHERE `id` IN (' . implode(',', $messagesAr) . ')
+                ');
+                $sth->execute($sth);
+            }
+
         } catch (AmoWrapException $e) {
             TelegramLog::error($e->getMessage());
         }

@@ -89,7 +89,7 @@ class SurveyFailCronCommand extends AdminCommand {
                     `chat_id` = NULL,
                     `phones` = :phones,
                     `type` = :type,
-                    `status` = 0,
+                    `status` = ' . self::STATUS_TO_SEND . ',
                     `created_at` = :created_at,
                     `updated_at` = :created_at 
                 ');

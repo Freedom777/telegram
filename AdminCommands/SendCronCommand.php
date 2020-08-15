@@ -46,7 +46,7 @@ class SendCronCommand extends AdminCommand {
         $pdoStatement = DB::getPdo()->query('
             SELECT *
             FROM `cron_message`
-            WHERE `status` = ' . self::STATUS_TO_SEND
+            WHERE `status` IN (' . self::STATUS_TO_SEND . ',' . self::STATUS_REMIND . ')'
             , PDO::FETCH_ASSOC);
         $messages = [];
         foreach ($pdoStatement as $row) {
@@ -58,6 +58,7 @@ class SendCronCommand extends AdminCommand {
                     'chat_id' => $amocrmUsersAr [(int) $row ['amocrm_user_id']] ['chat_id'],
                     'type' => $row ['type'],
                     'phone' => $amocrmUsersAr [(int) $row ['amocrm_user_id']] ['phone'],
+                    'status' => $row ['status'],
                 ];
             }
         }
@@ -66,7 +67,11 @@ class SendCronCommand extends AdminCommand {
         foreach ($messages as $id => $message) {
             switch ($message ['type']) {
                 case self::REMIND_NO_ORDER:
-                    $text = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'remind.php';
+                    if ($message ['status'] == self::STATUS_TO_SEND) {
+                        $text = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'remind.php';
+                    } elseif ($message ['status'] == self::STATUS_REMIND) {
+                        $text = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'remind_again.php';
+                    }
                     $data = [
                         'chat_id' => $message ['chat_id'],
                         'text'    => $text,
@@ -76,11 +81,17 @@ class SendCronCommand extends AdminCommand {
                     $sentMessages [] = $id;
                     break;
                 case self::BILL_SENT:
-                    $text = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'billsent.php';
                     $data = [
                         'chat_id' => $message ['chat_id'],
-                        'text'    => $text,
                     ];
+                    $text = '';
+                    if ($message ['status'] == self::STATUS_TO_SEND) {
+                        $text = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'billsent.php';
+                    } elseif ($message ['status'] == self::STATUS_REMIND) {
+                        $text = vsprintf(require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'billsent_again.php', [$message ['amocrm_lead_id']]);
+                    }
+                    $data ['text'] = $text;
+
                     Request::sendMessage($data);
 
                     $sentMessages [] = $id;
@@ -138,7 +149,15 @@ class SendCronCommand extends AdminCommand {
                 UPDATE `cron_message` SET 
                     `status` = ' . self::STATUS_SENT . ',
                     `updated_at` = NOW()
-                WHERE `id` IN (' . implode(',', $sentMessages). ')
+                WHERE `status` = ' . self::STATUS_TO_SEND . ' AND `id` IN (' . implode(',', $sentMessages). ')
+            ');
+            $sth->execute($sth);
+
+            $sth = DB::getPdo()->prepare('
+                UPDATE `cron_message` SET 
+                    `status` = ' . self::STATUS_REMINDED . ',
+                    `updated_at` = NOW()
+                WHERE `status` = ' . self::STATUS_REMIND . ' AND `id` IN (' . implode(',', $sentMessages). ')
             ');
             $sth->execute($sth);
         }
