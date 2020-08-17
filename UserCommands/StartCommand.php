@@ -149,7 +149,9 @@ class StartCommand extends UserCommand
                                 ->setSelective(true);
 
                         } else {
-                            $answerText = self::ERROR_PHONE_NOT_FOUND;
+                            $answerText = self::ERROR_PHONE_NOT_FOUND .
+                                PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_1') .
+                                PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_2');
                             $this->conversation->stop();
                         }
                     }

@@ -39,6 +39,8 @@ abstract class AdminCommand extends AdminCommandBase {
     const STATUS_REMIND = 2;
     const STATUS_REMINDED = 3;
 
+    const MESSAGE_GET_CALL = 'Обратный звонок';
+
     protected function processPhones($phonesAr) {
         $phonesEscapedAr = [];
         if (!empty($phonesAr)) {

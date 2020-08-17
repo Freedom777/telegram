@@ -79,6 +79,9 @@ class CallbackqueryCommand extends SystemCommand
                 // $result = $this->getTelegram()->executeCommand('history');
                 break;
 
+            case '/getcall':
+                break;
+
         }
 
         return $result;

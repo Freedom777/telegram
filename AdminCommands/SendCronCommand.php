@@ -3,6 +3,8 @@
 namespace Longman\TelegramBot\Commands\AdminCommands;
 
 use Longman\TelegramBot\Conversation;
+use Longman\TelegramBot\Entities\InlineKeyboard;
+use Longman\TelegramBot\Entities\InlineKeyboardButton;
 use Longman\TelegramBot\Entities\Keyboard;
 use Models\AdminCommand;
 use Longman\TelegramBot\DB;
@@ -65,25 +67,29 @@ class SendCronCommand extends AdminCommand {
 
         $sentMessages = [];
         foreach ($messages as $id => $message) {
+            $data = [
+                'chat_id' => $message ['chat_id'],
+            ];
+
             switch ($message ['type']) {
                 case self::REMIND_NO_ORDER:
                     if ($message ['status'] == self::STATUS_TO_SEND) {
-                        $text = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'remind.php';
+                        $data ['text'] = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'remind.php';
                     } elseif ($message ['status'] == self::STATUS_REMIND) {
-                        $text = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'remind_again.php';
+                        $data ['text'] = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'remind_again.php';
                     }
-                    $data = [
-                        'chat_id' => $message ['chat_id'],
-                        'text'    => $text,
-                    ];
-                    Request::sendMessage($data);
+                    $data ['text'] .= PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_1') . PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_2');
+                    /*$data ['reply_markup'] = (new InlineKeyboard([
+                        new InlineKeyboardButton(['callback_data' => '/getcall', 'text' => self::MESSAGE_GET_CALL]),
+                    ]))
+                        ->setResizeKeyboard(true)
+                        ->setOneTimeKeyboard(true)
+                        ->setSelective(true);*/
 
+                    Request::sendMessage($data);
                     $sentMessages [] = $id;
                     break;
                 case self::BILL_SENT:
-                    $data = [
-                        'chat_id' => $message ['chat_id'],
-                    ];
                     $text = '';
                     if ($message ['status'] == self::STATUS_TO_SEND) {
                         $text = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'billsent.php';
@@ -93,16 +99,13 @@ class SendCronCommand extends AdminCommand {
                     $data ['text'] = $text;
 
                     Request::sendMessage($data);
-
                     $sentMessages [] = $id;
                     break;
                 case self::SURVEY_FEEDBACK:
                     //Preparing Response
                     $msg = $this->getMessage();
                     $text    = trim($msg->getText(true));
-                    $data = [
-                        'chat_id' => $message ['chat_id'],
-                    ];
+
                     $question = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveysuccess.php';
                     $answers = ['1', '2', '3', '4', '5'];
 
@@ -133,12 +136,35 @@ class SendCronCommand extends AdminCommand {
                         'chat_id' => $message ['chat_id'],
                         'text' => 'Спасибо за обратную связь, Вы выбрали ' . $text,
                     ];
+
                     Request::sendMessage($data);
-
-
                     $sentMessages [] = $id;
                     break;
                 case self::SURVEY_NOT_BOUGHT:
+                    //Preparing Response
+                    $msg = $this->getMessage();
+                    $text    = trim($msg->getText(true));
+                    $question = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveyfail.php';
+
+                    //Conversation start
+                    $this->conversation = new Conversation($message ['chat_id'], $message ['chat_id'], $this->getName());
+
+                    // $result = Request::emptyResponse();
+                    if ($text === '') {
+                        $this->conversation->update();
+
+                        $data ['text'] = $question;
+                        Request::sendMessage($data);
+                        break;
+                    }
+
+                    $this->conversation->stop();
+
+                    $data = [
+                        'text' => 'Спасибо за обратную связь!',
+                    ];
+                    Request::sendMessage($data);
+
                     $sentMessages [] = $id;
                     break;
             }
