@@ -1,27 +1,16 @@
 <?php
-/**
- * This file is part of the TelegramBot package.
- *
- * (c) Avtandil Kikabidze aka LONGMAN <akalongman@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace Longman\TelegramBot\Commands\AdminCommands;
 
-use Longman\TelegramBot\Commands\UserCommand;
 use Longman\TelegramBot\Conversation;
 use Longman\TelegramBot\Entities\Keyboard;
-use Longman\TelegramBot\Entities\KeyboardButton;
-use Longman\TelegramBot\Entities\PhotoSize;
 use Longman\TelegramBot\Request;
 use Models\AdminCommand;
 
 /**
  * Admin "/surveysuccess" command
  *
- * Command that demonstrated the Conversation funtionality in form of a simple survey.
+ * Command that demonstrated the Conversation functionality in form of a simple survey.
  */
 class SurveySuccessCommand extends AdminCommand
 {
@@ -70,20 +59,16 @@ class SurveySuccessCommand extends AdminCommand
      */
     public function execute()
     {
-        $message = $this->getMessage();
-
-        $chat    = $message->getChat();
-        $user    = $message->getFrom();
-        $text    = trim($message->getText(true));
+        $msg     = $this->getMessage();
+        $chat    = $msg->getChat();
+        $user    = $msg->getFrom();
+        $text    = trim($msg->getText(true));
         $chat_id = $chat->getId();
         $user_id = $user->getId();
+        $data    = [];
 
         //Conversation start
         $this->conversation = new Conversation($user_id, $chat_id, $this->getName());
-
-        //Preparing Response
-        $msg = $this->getMessage();
-        $text = trim($msg->getText(true));
 
         $notes = &$this->conversation->notes;
         !is_array($notes) && $notes = [];
@@ -98,11 +83,10 @@ class SurveySuccessCommand extends AdminCommand
 
         switch ($state) {
             case 0:
-                // $result = Request::emptyResponse();
-                $question = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveysuccess.php';
                 $answers = ['1', '2', '3', '4', '5'];
 
                 if ($text === '' || !in_array($text, $answers, true)) {
+                    $question = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveysuccess.php';
                     $this->conversation->update();
 
                     $data['reply_markup'] = (new Keyboard($answers))
@@ -111,11 +95,7 @@ class SurveySuccessCommand extends AdminCommand
                         ->setSelective(true);
 
                     $data ['text'] = $question;
-                    if ($text !== '') {
-                        $data ['text'] = $question;
-                    }
-
-                    Request::sendMessage($data);
+                    $result = Request::sendMessage($data);
                 }
 
                 $notes ['surveysuccess'] = $text;
@@ -126,16 +106,16 @@ class SurveySuccessCommand extends AdminCommand
                     $notes ['state'] = 1;
                     $this->conversation->update();
 
+                    // unset($notes ['state']);
+                    $this->conversation->stop();
+
                     $data = array_merge($data, [
                         'reply_markup' => Keyboard::remove(['selective' => true]),
                         'text' => 'Спасибо за обратную связь, Вы выбрали ' . $notes ['surveysuccess'],
                     ]);
-
-                    // unset($notes ['state']);
-                    $this->conversation->stop();
                     $result = Request::sendMessage($data);
                 }
-                break;
+            break;
         }
 
         return $result;
