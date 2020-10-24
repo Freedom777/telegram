@@ -138,16 +138,15 @@ class StartCommand extends UserCommand
                             $answerText = self::SUCCESS_LOGIN;
 
                             // При успешной авторизации вывод меню
-                            $data ['reply_markup'] = (new InlineKeyboard([
-                                new InlineKeyboardButton(['callback_data' => '/status', 'text' => self::MENU_ORDER_STATUS]),
-                                new InlineKeyboardButton(['callback_data' => '/history', 'text' => self::MENU_HISTORY]),
-                                new InlineKeyboardButton(['callback_data' => '/catalog', 'text' => self::MENU_CATALOG]),
-                                new InlineKeyboardButton(['url' => getenv('CHANNEL_INVITE_LINK'), 'text' => self::MENU_NEWS_CHANNEL]),
-                            ]))
-                                ->setResizeKeyboard(false)
+                            $data ['reply_markup'] = new InlineKeyboard([]);
+                            $data ['reply_markup']
+                                ->addRow(new InlineKeyboardButton(['callback_data' => '/status', 'text' => self::MENU_ORDER_STATUS]))
+                                ->addRow(new InlineKeyboardButton(['callback_data' => '/history', 'text' => self::MENU_HISTORY]))
+                                ->addRow(new InlineKeyboardButton(['callback_data' => '/catalog', 'text' => self::MENU_CATALOG]))
+                                ->addRow(new InlineKeyboardButton(['url' => getenv('CHANNEL_INVITE_LINK'), 'text' => self::MENU_NEWS_CHANNEL]))
+                                ->setResizeKeyboard(true)
                                 ->setOneTimeKeyboard(true)
                                 ->setSelective(true);
-
                         } else {
                             $answerText = self::ERROR_PHONE_NOT_FOUND .
                                 PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_1') .
@@ -172,13 +171,15 @@ class StartCommand extends UserCommand
 
                     switch ($choice) {
                         case self::MENU_ORDER_STATUS:
-                            $this->notes ['choice'] = '/status';
-                            $this->conversation->stop();
+                            // $this->notes ['choice'] = '/status';
                             $result = $this->getTelegram()->executeCommand('status');
                             // $result = (new StatusCommand($this->getTelegram()))->execute();
                             break;
                     }
+
+                    $this->conversation->stop();
                 }
+            break;
         }
 
         return $result;

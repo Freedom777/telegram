@@ -2,6 +2,7 @@
 
 namespace Longman\TelegramBot\Commands\AdminCommands;
 
+use Longman\TelegramBot\Commands\UserCommands\SurveySuccessCommand;
 use Longman\TelegramBot\Conversation;
 use Longman\TelegramBot\Entities\InlineKeyboard;
 use Longman\TelegramBot\Entities\InlineKeyboardButton;
@@ -79,12 +80,6 @@ class SendCronCommand extends AdminCommand {
                         $data ['text'] = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'remind_again.php';
                     }
                     $data ['text'] .= PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_1') . PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_2');
-                    /*$data ['reply_markup'] = (new InlineKeyboard([
-                        new InlineKeyboardButton(['callback_data' => '/getcall', 'text' => self::MESSAGE_GET_CALL]),
-                    ]))
-                        ->setResizeKeyboard(true)
-                        ->setOneTimeKeyboard(true)
-                        ->setSelective(true);*/
 
                     Request::sendMessage($data);
                     $sentMessages [] = $id;
@@ -102,52 +97,22 @@ class SendCronCommand extends AdminCommand {
                     $sentMessages [] = $id;
                     break;
                 case self::SURVEY_FEEDBACK:
-                    //Preparing Response
-                    $msg = $this->getMessage();
-                    $text    = trim($msg->getText(true));
+                    $result = $this->getTelegram()->executeCommand('surveysuccess');
 
-                    $question = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveysuccess.php';
-                    $answers = ['1', '2', '3', '4', '5'];
-
-                    //Conversation start
-                    $this->conversation = new Conversation($message ['chat_id'], $message ['chat_id'], $this->getName());
-
-                    // $result = Request::emptyResponse();
-                    if ($text === '' || !in_array($text, $answers, true)) {
-                        $this->conversation->update();
-
-                        $data['reply_markup'] = (new Keyboard($answers))
-                            ->setResizeKeyboard(true)
-                            ->setOneTimeKeyboard(true)
-                            ->setSelective(true);
-
-                        $data ['text'] = $question;
-                        if ($text !== '') {
-                            $data ['text'] = $question;
-                        }
-
-                        Request::sendMessage($data);
+                    if (!empty($result)) {
+                        $sentMessages [] = $id;
                     }
-
-                    $this->conversation->stop();
-
-                    $data = [
-                        'reply_markup' => Keyboard::remove(['selective' => true]),
-                        'chat_id' => $message ['chat_id'],
-                        'text' => 'Спасибо за обратную связь, Вы выбрали ' . $text,
-                    ];
-
-                    Request::sendMessage($data);
-                    $sentMessages [] = $id;
                     break;
                 case self::SURVEY_NOT_BOUGHT:
-                    //Preparing Response
+                    /*//Preparing Response
                     $msg = $this->getMessage();
                     $text    = trim($msg->getText(true));
                     $question = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveyfail.php';
 
                     //Conversation start
-                    $this->conversation = new Conversation($message ['chat_id'], $message ['chat_id'], $this->getName());
+                    $this->conversation = new Conversation($message ['chat_id'], $message ['chat_id'],
+                        (new SurveyFailCommand($this->getTelegram()))->getName()
+                    );
 
                     // $result = Request::emptyResponse();
                     if ($text === '') {
@@ -163,9 +128,12 @@ class SendCronCommand extends AdminCommand {
                     $data = [
                         'text' => 'Спасибо за обратную связь!',
                     ];
-                    Request::sendMessage($data);
+                    Request::sendMessage($data);*/
+                    $result = $this->getTelegram()->executeCommand('surveyfail');
 
-                    $sentMessages [] = $id;
+                    if (!empty($result)) {
+                        $sentMessages [] = $id;
+                    }
                     break;
             }
         }
