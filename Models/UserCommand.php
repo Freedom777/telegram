@@ -68,8 +68,8 @@ abstract class UserCommand extends UserCommandBase {
 
         //cache data from the tracking session if any
         $state = 0;
-        if (isset($notes ['state'])) {
-            $state = $notes ['state'];
+        if (isset($this->notes ['state'])) {
+            $state = $this->notes ['state'];
         }
 
         return $state;

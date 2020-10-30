@@ -83,6 +83,9 @@ class SurveySuccessCommand extends AdminCommand
                 $this->text = '';
 
             case 1:
+                $data ['text'] = $this->notes ['rate'];
+                $result = Request::sendMessage($data);
+                return $result;
                 if (in_array($this->notes ['rate'], $answers)) {
                     $notes ['state'] = 1;
                     $this->conversation->update();
