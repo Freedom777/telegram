@@ -79,7 +79,7 @@ class SurveySuccessCommand extends AdminCommand
                     $result = Request::sendMessage($data);
                 }
 
-                $notes ['rate'] = $this->text;
+                $this->notes ['rate'] = $this->text;
                 $this->text = '';
 
             case 1:
@@ -87,17 +87,21 @@ class SurveySuccessCommand extends AdminCommand
                 $result = Request::sendMessage($data);
                 return $result;*/
                 if (isset($this->notes ['rate']) && in_array($this->notes ['rate'], $answers)) {
-                    $notes ['state'] = 1;
+                    $this->notes ['state'] = 1;
                     $this->conversation->update();
 
                     $data = array_merge($data, [
                         'reply_markup' => Keyboard::remove(['selective' => true]),
-                        'text' => 'Спасибо за обратную связь, Вы выбрали ' . $notes ['rate'],
+                        'text' => 'Спасибо за обратную связь, Вы выбрали ' . $this->notes ['rate'],
                     ]);
                     $result = Request::sendMessage($data);
 
                     // unset($notes ['state']);
                     $this->conversation->stop();
+                    $result = Request::sendMessage($data);
+                } else {
+                    $data ['text'] = var_export($this->notes, true);
+                    $result = Request::sendMessage($data);
                 }
             break;
         }
