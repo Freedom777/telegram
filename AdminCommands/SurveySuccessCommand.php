@@ -95,13 +95,13 @@ class SurveySuccessCommand extends AdminCommand
                         'text' => 'Спасибо за обратную связь, Вы выбрали ' . $notes ['surveysuccess'],
                     ]);
                     $result = Request::sendMessage($data);
-                } else {
+                }/* else {
                     $data = array_merge($data, [
                         'text' => $question,
                     ]);
                     $this->notes ['state'] = 1;
                     $result = Request::sendMessage($data);
-                }
+                }*/
             break;
         }
 
