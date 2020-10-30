@@ -89,7 +89,7 @@ class SurveySuccessCommand extends AdminCommand
 
                     $data = array_merge($data, [
                         'reply_markup' => Keyboard::remove(['selective' => true]),
-                        'text' => 'Спасибо за обратную связь, Вы выбрали ' . $notes ['surveysuccess'],
+                        'text' => 'Спасибо за обратную связь, Вы выбрали ' . $notes ['rate'],
                     ]);
                     $result = Request::sendMessage($data);
 
