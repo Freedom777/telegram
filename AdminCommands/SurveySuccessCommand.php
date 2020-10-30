@@ -101,10 +101,3 @@ class SurveySuccessCommand extends AdminCommand
         return $result;
     }
 }
-/* else {
-                    $data = array_merge($data, [
-                        'text' => $question,
-                    ]);
-                    $this->notes ['state'] = 1;
-                    $result = Request::sendMessage($data);
-                }*/
