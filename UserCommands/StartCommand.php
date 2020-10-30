@@ -13,15 +13,11 @@ namespace Longman\TelegramBot\Commands\UserCommands;
 use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use DrillCoder\AmoCRM_Wrap\AmoWrapException;
 use Models\UserCommand;
-use Longman\TelegramBot\Conversation;
-use Longman\TelegramBot\DB;
 use Longman\TelegramBot\Entities\InlineKeyboard;
 use Longman\TelegramBot\Entities\InlineKeyboardButton;
 use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Entities\KeyboardButton;
 use Longman\TelegramBot\Request;
-use Longman\TelegramBot\Telegram;
-use Longman\TelegramBot\TelegramLog;
 
 /**
  * Start command
@@ -54,13 +50,6 @@ class StartCommand extends UserCommand
      * @var bool
      */
     protected $private_only = true;
-
-    /**
-     * Conversation Object
-     *
-     * @var \Longman\TelegramBot\Conversation
-     */
-    protected $conversation;
 
     /**
      * Command execute method

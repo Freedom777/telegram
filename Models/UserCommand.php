@@ -12,7 +12,11 @@ abstract class UserCommand extends UserCommandBase {
      */
     protected $version = '1.0.0';
 
-    protected $notes;
+    /**
+     * @var array
+     */
+    protected $notes = [];
+
     /**
      * @var int
      */
@@ -27,6 +31,13 @@ abstract class UserCommand extends UserCommandBase {
      * @var string
      */
     protected $text;
+
+    /**
+     * Conversation Object
+     *
+     * @var \Longman\TelegramBot\Conversation
+     */
+    protected $conversation;
 
     const TIMEZONE = 'Europe/Kiev';
 

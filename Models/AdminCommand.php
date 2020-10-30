@@ -11,7 +11,11 @@ abstract class AdminCommand extends AdminCommandBase {
      */
     protected $version = '1.0.0';
 
+    /**
+     * @var array
+     */
     protected $notes = [];
+
     /**
      * @var int
      */
@@ -26,6 +30,13 @@ abstract class AdminCommand extends AdminCommandBase {
      * @var string
      */
     protected $text;
+
+    /**
+     * Conversation Object
+     *
+     * @var \Longman\TelegramBot\Conversation
+     */
+    protected $conversation;
 
     /**
      * @var bool

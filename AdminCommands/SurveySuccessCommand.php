@@ -63,11 +63,6 @@ class SurveySuccessCommand extends AdminCommand
         $data = $this->prepareInput();
         $state = $this->getState();
 
-        $answers = ['1', '2', '3', '4', '5'];
-        $data ['text'] = implode(',', $answers);
-        $result = Request::sendMessage($data);
-        return $result;
-
         switch ($state) {
             case 0:
                 $answers = ['1', '2', '3', '4', '5'];
