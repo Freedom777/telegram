@@ -81,7 +81,6 @@ class SurveySuccessCommand extends AdminCommand
 
                 $notes ['rate'] = $this->text;
                 $this->text = '';
-            break;
 
             case 1:
                 if (in_array($this->notes ['rate'], $answers)) {
