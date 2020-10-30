@@ -58,6 +58,8 @@ class SurveySuccessCommand extends AdminCommand
      */
     public function execute()
     {
+        $answers = ['1', '2', '3', '4', '5'];
+        $question = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveysuccess.php';
         $result = Request::emptyResponse();
 
         $data = $this->prepareInput();
@@ -65,10 +67,7 @@ class SurveySuccessCommand extends AdminCommand
 
         switch ($state) {
             case 0:
-                $answers = ['1', '2', '3', '4', '5'];
-
                 if ($this->text === '' || !in_array($this->text, $answers, true)) {
-                    $question = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveysuccess.php';
                     $this->conversation->update();
 
                     $data['reply_markup'] = (new Keyboard($answers))
@@ -80,11 +79,11 @@ class SurveySuccessCommand extends AdminCommand
                     $result = Request::sendMessage($data);
                 }
 
-                $notes ['surveysuccess'] = $this->text;
+                $notes ['rate'] = $this->text;
                 $this->text = '';
 
             case 1:
-                if ($this->text === '') {
+                if (in_array($this->notes ['rate'], $answers)) {
                     $notes ['state'] = 1;
                     $this->conversation->update();
 
@@ -95,6 +94,12 @@ class SurveySuccessCommand extends AdminCommand
                         'reply_markup' => Keyboard::remove(['selective' => true]),
                         'text' => 'Спасибо за обратную связь, Вы выбрали ' . $notes ['surveysuccess'],
                     ]);
+                    $result = Request::sendMessage($data);
+                } else {
+                    $data = array_merge($data, [
+                        'text' => $question,
+                    ]);
+                    $this->notes ['state'] = 1;
                     $result = Request::sendMessage($data);
                 }
             break;
