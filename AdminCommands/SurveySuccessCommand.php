@@ -87,24 +87,25 @@ class SurveySuccessCommand extends AdminCommand
                     $notes ['state'] = 1;
                     $this->conversation->update();
 
-                    // unset($notes ['state']);
-                    $this->conversation->stop();
-
                     $data = array_merge($data, [
                         'reply_markup' => Keyboard::remove(['selective' => true]),
                         'text' => 'Спасибо за обратную связь, Вы выбрали ' . $notes ['surveysuccess'],
                     ]);
                     $result = Request::sendMessage($data);
-                }/* else {
-                    $data = array_merge($data, [
-                        'text' => $question,
-                    ]);
-                    $this->notes ['state'] = 1;
-                    $result = Request::sendMessage($data);
-                }*/
+
+                    // unset($notes ['state']);
+                    $this->conversation->stop();
+                }
             break;
         }
 
         return $result;
     }
 }
+/* else {
+                    $data = array_merge($data, [
+                        'text' => $question,
+                    ]);
+                    $this->notes ['state'] = 1;
+                    $result = Request::sendMessage($data);
+                }*/
