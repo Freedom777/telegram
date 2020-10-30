@@ -51,21 +51,6 @@ class StatusCommand extends UserCommand
     protected $private_only = true;
 
     /**
-     * @var int
-     */
-    protected $chat_id;
-
-    /**
-     * @var int
-     */
-    protected $user_id;
-
-    /**
-     * @var string
-     */
-    protected $text;
-
-    /**
      * @const array
      */
     const STATUSES_NOT_SHOW = [142, 143];
@@ -80,10 +65,7 @@ class StatusCommand extends UserCommand
     {
         $this->prepareInput();
 
-        //Preparing Response
-        $data = [
-            'chat_id' => $this->chat_id,
-        ];
+        $data = $this->prepareInput();
         $answerText = 'Введите /start для авторизации.';
 
         $amocrmUserId = $this->getContactIdByChatId($this->user_id);

@@ -50,21 +50,6 @@ class HistoryCommand extends UserCommand
     protected $private_only = true;
 
     /**
-     * @var int
-     */
-    protected $chat_id;
-
-    /**
-     * @var int
-     */
-    protected $user_id;
-
-    /**
-     * @var string
-     */
-    protected $text;
-
-    /**
      * Command execute method
      *
      * @return \Longman\TelegramBot\Entities\ServerResponse
@@ -72,12 +57,8 @@ class HistoryCommand extends UserCommand
      */
     public function execute()
     {
-        $this->prepareInput();
+        $data = $this->prepareInput();
 
-        //Preparing Response
-        $data = [
-            'chat_id' => $this->chat_id,
-        ];
         $answerText = 'Введите /start для авторизации.';
 
         $amocrmUserId = $this->getContactIdByChatId($this->user_id);

@@ -3,12 +3,34 @@
 namespace Models;
 
 use Longman\TelegramBot\Commands\AdminCommand as AdminCommandBase;
+use Longman\TelegramBot\Conversation;
 
 abstract class AdminCommand extends AdminCommandBase {
     /**
      * @var string
      */
     protected $version = '1.0.0';
+
+    protected $notes = [];
+    /**
+     * @var int
+     */
+    protected $chat_id;
+
+    /**
+     * @var int
+     */
+    protected $user_id;
+
+    /**
+     * @var string
+     */
+    protected $text;
+
+    /**
+     * @var bool
+     */
+    protected $private_only = true;
 
     const REMIND_NO_ORDER = 'remind_no_order';
     const BILL_SENT = 'bill_sent';
@@ -40,6 +62,38 @@ abstract class AdminCommand extends AdminCommandBase {
     const STATUS_REMINDED = 3;
 
     const MESSAGE_GET_CALL = 'Обратный звонок';
+
+    protected function getState() {
+        //Conversation start
+        $this->conversation = new Conversation($this->user_id, $this->chat_id, $this->getName());
+
+        $this->notes = &$this->conversation->notes;
+        !is_array($this->notes) && $this->notes = [];
+
+        //cache data from the tracking session if any
+        $state = 0;
+        if (isset($notes ['state'])) {
+            $state = $notes ['state'];
+        }
+
+        return $state;
+    }
+
+    protected function prepareInput() {
+        $message = $this->getMessage();
+        $chat    = $message->getChat();
+        $user    = $message->getFrom();
+
+        $this->chat_id = $chat->getId();
+        $this->user_id = $user->getId();
+        $this->text = trim($message->getText(true));
+
+        // Default Response data
+        return [
+            'chat_id' => $this->chat_id,
+        ];
+    }
+
 
     protected function processPhones($phonesAr) {
         $phonesEscapedAr = [];

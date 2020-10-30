@@ -63,21 +63,6 @@ class StartCommand extends UserCommand
     protected $conversation;
 
     /**
-     * @var int
-     */
-    protected $chat_id;
-
-    /**
-     * @var int
-     */
-    protected $user_id;
-
-    /**
-     * @var string
-     */
-    protected $text;
-
-    /**
      * Command execute method
      *
      * @return \Longman\TelegramBot\Entities\ServerResponse
@@ -85,12 +70,7 @@ class StartCommand extends UserCommand
      */
     public function execute()
     {
-        $this->prepareInput();
-
-        //Preparing Response
-        $data = [
-            'chat_id' => $this->chat_id,
-        ];
+        $data = $this->prepareInput();
         $answerText = '';
         // TelegramLog::notice($text);
 

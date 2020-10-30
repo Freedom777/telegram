@@ -13,6 +13,20 @@ abstract class UserCommand extends UserCommandBase {
     protected $version = '1.0.0';
 
     protected $notes;
+    /**
+     * @var int
+     */
+    protected $chat_id;
+
+    /**
+     * @var int
+     */
+    protected $user_id;
+
+    /**
+     * @var string
+     */
+    protected $text;
 
     const TIMEZONE = 'Europe/Kiev';
 
@@ -58,6 +72,11 @@ abstract class UserCommand extends UserCommandBase {
         $this->chat_id = $chat->getId();
         $this->user_id = $user->getId();
         $this->text = trim($message->getText(true));
+
+        // Default Response data
+        return [
+            'chat_id' => $this->chat_id,
+        ];
     }
 
     protected function processPhones($phonesAr) {

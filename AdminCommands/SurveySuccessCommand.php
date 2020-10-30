@@ -2,7 +2,6 @@
 
 namespace Longman\TelegramBot\Commands\AdminCommands;
 
-use Longman\TelegramBot\Conversation;
 use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Request;
 use Models\AdminCommand;
@@ -59,33 +58,21 @@ class SurveySuccessCommand extends AdminCommand
      */
     public function execute()
     {
-        $msg     = $this->getMessage();
-        $chat    = $msg->getChat();
-        $user    = $msg->getFrom();
-        $text    = trim($msg->getText(true));
-        $chat_id = $chat->getId();
-        $user_id = $user->getId();
-        $data    = [];
-
-        //Conversation start
-        $this->conversation = new Conversation($user_id, $chat_id, $this->getName());
-
-        $notes = &$this->conversation->notes;
-        !is_array($notes) && $notes = [];
-
-        //cache data from the tracking session if any
-        $state = 0;
-        if (isset($notes['state'])) {
-            $state = $notes['state'];
-        }
-
         $result = Request::emptyResponse();
+
+        $data = $this->prepareInput();
+        $state = $this->getState();
+
+        $answers = ['1', '2', '3', '4', '5'];
+        $data ['text'] = implode(',', $answers);
+        $result = Request::sendMessage($data);
+        return $result;
 
         switch ($state) {
             case 0:
                 $answers = ['1', '2', '3', '4', '5'];
 
-                if ($text === '' || !in_array($text, $answers, true)) {
+                if ($this->text === '' || !in_array($this->text, $answers, true)) {
                     $question = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveysuccess.php';
                     $this->conversation->update();
 
@@ -98,11 +85,11 @@ class SurveySuccessCommand extends AdminCommand
                     $result = Request::sendMessage($data);
                 }
 
-                $notes ['surveysuccess'] = $text;
-                $text = '';
+                $notes ['surveysuccess'] = $this->text;
+                $this->text = '';
 
             case 1:
-                if ($text === '') {
+                if ($this->text === '') {
                     $notes ['state'] = 1;
                     $this->conversation->update();
 
