@@ -83,9 +83,6 @@ class SurveySuccessCommand extends AdminCommand
                 $this->text = '';
 
             case 1:
-                /*$data ['text'] = $this->notes ['rate'];
-                $result = Request::sendMessage($data);
-                return $result;*/
                 if (isset($this->notes ['rate']) && in_array($this->notes ['rate'], $answers)) {
                     $this->notes ['state'] = 1;
                     $this->conversation->update();
@@ -94,13 +91,8 @@ class SurveySuccessCommand extends AdminCommand
                         'reply_markup' => Keyboard::remove(['selective' => true]),
                         'text' => 'Спасибо за обратную связь, Вы выбрали ' . $this->notes ['rate'],
                     ]);
-                    $result = Request::sendMessage($data);
 
-                    // unset($notes ['state']);
                     $this->conversation->stop();
-                    $result = Request::sendMessage($data);
-                } else {
-                    $data ['text'] = var_export($this->notes, true);
                     $result = Request::sendMessage($data);
                 }
             break;
