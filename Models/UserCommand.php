@@ -127,7 +127,7 @@ abstract class UserCommand extends UserCommandBase {
                                         `chat_id` = :chat_id, 
                                         `amocrm_user_id` = :amocrm_user_id,
                                         `phone` = :phone,
-                                        `created_at` = :current_date_time
+                                        `created_at` = :current_date_time,
                                         `updated_at` = :current_date_time
                                     ');
                     $sth->execute([
