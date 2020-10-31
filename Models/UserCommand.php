@@ -106,31 +106,79 @@ abstract class UserCommand extends UserCommandBase {
     protected function checkInsertUser($phone, $contactId) {
         // Update table
         if ($this->user_id == $this->chat_id) { // Private chat
-            /** @var \PDOStatement $pdoStatement */
-            $sth = DB::getPdo()->prepare('
-                                    SELECT `phone`
+            $currentDateTime = date('Y-m-d H:i:s');
+            if (null === $contactId) {
+                // Contact in AMOCRM not found
+                $sth = DB::getPdo()->prepare('
+                                    SELECT `id`
                                     FROM `amocrm_user`
-                                    WHERE `chat_id` = :chat_id AND `amocrm_user_id` = :amocrm_user_id
+                                    WHERE `phone` = :phone
                                     ORDER BY `id` DESC
                                     LIMIT 1'
-            );
-            $sth->execute([
-                ':chat_id' => $this->chat_id,
-                ':amocrm_user_id' => $contactId,
-            ]);
-            $exist = $sth->fetch(\PDO::FETCH_ASSOC);
-            if (empty($exist) || $phone != $exist ['phone']) {
-                $sth = DB::getPdo()->prepare('
+                );
+
+                $sth->execute([
+                    ':phone' => $phone,
+                ]);
+                $exist = $sth->fetch(\PDO::FETCH_ASSOC);
+                if (empty($exist)) {
+                    $sth = DB::getPdo()->prepare('
                                         INSERT INTO `amocrm_user` SET
                                         `chat_id` = :chat_id, 
                                         `amocrm_user_id` = :amocrm_user_id,
-                                        `phone` = :phone
+                                        `phone` = :phone,
+                                        `created_at` = :current_date_time
+                                        `updated_at` = :current_date_time
                                     ');
+                    $sth->execute([
+                        ':chat_id' => $this->chat_id,
+                        ':amocrm_user_id' => null,
+                        ':phone' => $phone,
+                        ':current_date_time' => $currentDateTime
+                    ]);
+                } else {
+                    $sth = DB::getPdo()->prepare('
+                                        UPDATE `amocrm_user` SET
+                                        `chat_id` = :chat_id,
+                                        `amocrm_user_id` = :amocrm_user_id,
+                                        `updated_at` = :current_date_time
+                                        WHERE `id` = :id
+                                    ');
+                    $sth->execute([
+                        ':id' => $exist ['id'],
+                        ':chat_id' => $this->chat_id,
+                        ':amocrm_user_id' => null,
+                        ':phone' => $phone,
+                        ':current_date_time' => $currentDateTime
+                    ]);
+                }
+            } else {
+                /** @var \PDOStatement $pdoStatement */
+                $sth = DB::getPdo()->prepare('
+                                        SELECT `phone`
+                                        FROM `amocrm_user`
+                                        WHERE `chat_id` = :chat_id AND `amocrm_user_id` = :amocrm_user_id
+                                        ORDER BY `id` DESC
+                                        LIMIT 1'
+                );
                 $sth->execute([
                     ':chat_id' => $this->chat_id,
                     ':amocrm_user_id' => $contactId,
-                    ':phone' => $phone,
                 ]);
+                $exist = $sth->fetch(\PDO::FETCH_ASSOC);
+                if (empty($exist) || $phone != $exist ['phone']) {
+                    $sth = DB::getPdo()->prepare('
+                                            INSERT INTO `amocrm_user` SET
+                                            `chat_id` = :chat_id, 
+                                            `amocrm_user_id` = :amocrm_user_id,
+                                            `phone` = :phone
+                                        ');
+                    $sth->execute([
+                        ':chat_id' => $this->chat_id,
+                        ':amocrm_user_id' => $contactId,
+                        ':phone' => $phone,
+                    ]);
+                }
             }
         }
     }

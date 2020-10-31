@@ -117,6 +117,7 @@ class StartCommand extends UserCommand
                                 ->setOneTimeKeyboard(true)
                                 ->setSelective(true);
                         } else {
+                            $this->checkInsertUser($phone, null);
                             $answerText = self::ERROR_PHONE_NOT_FOUND .
                                 PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_1') .
                                 PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_2');
