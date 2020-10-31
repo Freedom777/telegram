@@ -148,7 +148,6 @@ abstract class UserCommand extends UserCommandBase {
                         ':id' => $exist ['id'],
                         ':chat_id' => $this->chat_id,
                         ':amocrm_user_id' => null,
-                        ':phone' => $phone,
                         ':current_date_time' => $currentDateTime
                     ]);
                 }
