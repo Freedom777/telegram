@@ -2,6 +2,7 @@
 
 namespace Longman\TelegramBot\Commands\AdminCommands;
 
+use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use Longman\TelegramBot\Conversation;
 use Longman\TelegramBot\Entities\Keyboard;
 use Models\AdminCommand;
@@ -26,13 +27,21 @@ class TestCommand extends AdminCommand {
     public function execute()
     {
         $chat_id = 688516706;
+        $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
         //Preparing Response
         $msg = $this->getMessage();
         $text    = trim($msg->getText(true));
         $data = [
             'chat_id' => $chat_id,
+            'text' => $amo::getPipelinesName(),
         ];
+
+
+
+        $result = Request::sendMessage($data);
+        die();
+
         $question = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveysuccess.php';
         $answers = ['1', '2', '3', '4', '5'];
 
