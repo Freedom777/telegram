@@ -82,7 +82,7 @@ class CallbackqueryCommand extends SystemCommand
 
             case '/callrequire':
                 $telegram = $this->getTelegram();
-                $data = json_decode($telegram->getCustomInput(), true);
+                /*$data = json_decode($telegram->getCustomInput(), true);
                 // $data = json_encode(array_merge($data, ['phone' => $callback_data['phone']]));
                 // $telegram->setCustomInput($data);
 
@@ -91,7 +91,7 @@ class CallbackqueryCommand extends SystemCommand
                     'text'              => var_export($data),
                 ];
 
-                return Request::answerCallbackQuery($answer);
+                return Request::answerCallbackQuery($answer);*/
 
                 $result = (new CallRequireCommand($telegram, new Update($update)))->preExecute();
                 break;
