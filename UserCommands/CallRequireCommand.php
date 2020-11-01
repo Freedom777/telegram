@@ -50,17 +50,17 @@ class CallRequireCommand extends UserCommand
      */
     public function execute() {
         $data = $this->prepareInput();
-        $fio = $this->user->getFirstName() . (!empty($this->user->getLastName()) ? $this->user->getLastName() : '') .
+        $fio = $this->user->getFirstName() . (!empty($this->user->getLastName()) ? ' ' . $this->user->getLastName() : '') .
             ' (' . $this->user->getUsername() . ')';
         // $input = json_decode($this->getTelegram()->getCustomInput(), true);
         $phone = '+38' . $this->text;
 
         // $phone = $input['callback']['phone'];
-        /*$data ['text'] = var_export($input, true);
-        $result = Request::sendMessage($data);*/
+        $data ['text'] = $phone;
+        $result = Request::sendMessage($data);
 
         // $phone = $input->phone;
-        $result = Request::emptyResponse();
+        /*$result = Request::emptyResponse();
 
         try {
             $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
@@ -78,7 +78,7 @@ class CallRequireCommand extends UserCommand
             $result = Request::sendMessage($data);
         } catch (AmoWrapException $e) {
             TelegramLog::error($e); // die($e->getMessage()); //Прерывем работу скрипта и выводим текст ошибки
-        }
+        }*/
 
         return $result;
     }
