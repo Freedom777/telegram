@@ -63,7 +63,8 @@ class CallbackqueryCommand extends SystemCommand
         $update['message']['from']['id'] = $update['callback_query']['from']['id'];
 
         // $this->getMessage()->getCommand();
-        $command = $callback_query->getMessage()->getCommand();
+        $commandParts = explode(' ', $callback_data);
+        $command = $commandParts [0];
 
         $result = false;
         switch ($command) {
