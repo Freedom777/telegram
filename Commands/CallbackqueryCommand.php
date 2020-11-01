@@ -84,7 +84,7 @@ class CallbackqueryCommand extends SystemCommand
                 $telegram = $this->getTelegram();
                 $decoded = json_decode($telegram->getCustomInput());
                 // $callback_decoded = json_decode($callback_data);
-                $decoded->phone = $callback_data;// $callback_decoded->phone;
+                $decoded->callback = $callback_data;// $callback_decoded->phone;
                 $data = json_encode($decoded);
                 $telegram->setCustomInput($data);
 

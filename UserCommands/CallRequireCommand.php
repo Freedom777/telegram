@@ -51,13 +51,13 @@ class CallRequireCommand extends UserCommand
     public function execute() {
         $data = $this->prepareInput();
         $fio = $this->user->getFirstName() . $this->user->getLastName();
-        $input = json_decode($this->getTelegram()->getCustomInput());
+        $input = json_decode($this->getTelegram()->getCustomInput(), true);
 
-        $data['text'] = var_export($input->phone);
-        $result = Request::sendMessage($data);
-        die();
+        $phone = $input['callback']['phone'];
+        /*$result = Request::sendMessage($data);
+        die();*/
 
-        $phone = $input->phone;
+        // $phone = $input->phone;
         $result = Request::emptyResponse();
 
         try {
