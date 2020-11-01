@@ -34,7 +34,7 @@ class TestCommand extends AdminCommand {
         $text    = trim($msg->getText(true));
         $data = [
             'chat_id' => $chat_id,
-            'text' => $amo::getPipelinesName(),
+            'text' => implode(',', $amo::getPipelinesName()),
         ];
 
 
