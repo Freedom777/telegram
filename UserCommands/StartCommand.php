@@ -120,7 +120,7 @@ class StartCommand extends UserCommand
                             $this->checkInsertUser($phone, null);
                             $data ['reply_markup'] = new InlineKeyboard([]);
                             $data ['reply_markup']
-                                ->addRow(new InlineKeyboardButton(['callback_data' => '/callrequire', 'text' => self::MENU_REQUIRE_CALL, 'phone' => $phone]))
+                                ->addRow(new InlineKeyboardButton(['callback_data' => '/callrequire' . ' ' . $phone, 'text' => self::MENU_REQUIRE_CALL]))
                                 ->setResizeKeyboard(true)
                                 ->setOneTimeKeyboard(true)
                                 ->setSelective(true);

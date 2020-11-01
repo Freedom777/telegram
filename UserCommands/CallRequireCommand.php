@@ -50,14 +50,16 @@ class CallRequireCommand extends UserCommand
      */
     public function execute() {
         $data = $this->prepareInput();
-        $fio = $this->user->getFirstName() . $this->user->getLastName();
-        $input = json_decode($this->getTelegram()->getCustomInput(), true);
+        $fio = $this->user->getFirstName() . (!empty($this->user->getLastName()) ? $this->user->getLastName() : '') .
+            ' (' . $this->user->getUsername() . ')';
+        // $input = json_decode($this->getTelegram()->getCustomInput(), true);
+        $phone = '+38' . $this->text;
 
         // $phone = $input['callback']['phone'];
-        $data ['text'] = var_export($input, true);
-        $result = Request::sendMessage($data);
+        /*$data ['text'] = var_export($input, true);
+        $result = Request::sendMessage($data);*/
 
-        /*// $phone = $input->phone;
+        // $phone = $input->phone;
         $result = Request::emptyResponse();
 
         try {
@@ -69,14 +71,14 @@ class CallRequireCommand extends UserCommand
             $lead->setName('Заказ звонка')
                 ->setSale(0); //Создаём сделку, которая будет создана в црм после принятия заявки в неразобранном
             $unsorted = new Unsorted('Форма обратного звонка', $lead, [$contact], self::PIPELINE_NAME);
-            $unsorted->addNote('Позвонить по номеру +38' . $phone)
+            $unsorted->addNote('Позвонить по номеру ' . $phone)
                 ->save(); // Сохраняем всё в неразобранное в црм
 
             $data['text'] = 'Спасибо, мы свяжемся с Вами в ближайшее время.';
             $result = Request::sendMessage($data);
         } catch (AmoWrapException $e) {
             TelegramLog::error($e); // die($e->getMessage()); //Прерывем работу скрипта и выводим текст ошибки
-        }*/
+        }
 
         return $result;
     }

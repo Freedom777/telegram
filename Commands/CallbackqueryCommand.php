@@ -54,6 +54,7 @@ class CallbackqueryCommand extends SystemCommand
         $callback_query    = $this->getCallbackQuery();
         $callback_query_id = $callback_query->getId();
         $callback_data     = $callback_query->getData();
+        $telegram          = $this->getTelegram();
         TelegramLog::notice($callback_query_id . ' : ' . var_export($callback_data, true));
 
         $update = (array) $this->update;
@@ -69,22 +70,21 @@ class CallbackqueryCommand extends SystemCommand
                 break;*/
             case '/status':
                 // $result = $this->getTelegram()->executeCommand('status');
-                $result = (new StatusCommand($this->telegram, new Update($update)))->preExecute();
+                $result = (new StatusCommand($telegram, new Update($update)))->preExecute();
                 break;
             case '/catalog':
                 // $result = $this->getTelegram()->executeCommand('catalog');
-                $result = (new CatalogCommand($this->telegram, new Update($update)))->preExecute();
+                $result = (new CatalogCommand($telegram, new Update($update)))->preExecute();
                 break;
             case '/history':
-                $result = (new HistoryCommand($this->telegram, new Update($update)))->preExecute();
+                $result = (new HistoryCommand($telegram, new Update($update)))->preExecute();
                 // $result = $this->getTelegram()->executeCommand('history');
                 break;
 
             case '/callrequire':
-                $telegram = $this->getTelegram();
-                $decoded = json_decode($telegram->getCustomInput());
+                /*$decoded = json_decode($telegram->getCustomInput());
                 $decoded->phone = $callback_query->getProperty('phone');
-                $telegram->setCustomInput(json_encode($decoded));
+                $telegram->setCustomInput(json_encode($decoded));*/
 
                 $result = (new CallRequireCommand($telegram, new Update($update)))->preExecute();
                 break;
