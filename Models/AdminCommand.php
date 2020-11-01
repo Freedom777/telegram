@@ -66,6 +66,7 @@ abstract class AdminCommand extends AdminCommandBase {
     const TIMEZONE = 'Europe/Kiev';
 
     const PIPELINE_ID = 1979362;
+    const PIPELINE_NAME = 'Воронка';
 
     const STATUS_TO_SEND = 0;
     const STATUS_SENT = 1;

@@ -5,6 +5,8 @@ namespace Models;
 use Longman\TelegramBot\Commands\UserCommand as UserCommandBase;
 use Longman\TelegramBot\Conversation;
 use Longman\TelegramBot\DB;
+use Longman\TelegramBot\Entities\Chat;
+use Longman\TelegramBot\Entities\User;
 
 abstract class UserCommand extends UserCommandBase {
     /**
@@ -16,6 +18,16 @@ abstract class UserCommand extends UserCommandBase {
      * @var array
      */
     protected $notes = [];
+
+    /**
+     * @var Chat
+     */
+    protected $chat;
+
+    /**
+     * @var User
+     */
+    protected $user;
 
     /**
      * @var int
@@ -42,9 +54,25 @@ abstract class UserCommand extends UserCommandBase {
     const TIMEZONE = 'Europe/Kiev';
 
     const PIPELINE_ID = 1979362;
+    const PIPELINE_NAME = 'Воронка';
 
     const STATUS_TO_SEND = 0;
     const STATUS_SENT = 1;
+
+    const STATUSES = [
+        29361424    => 'Неразобранное',
+        29361427    => 'Новое обращение',
+        29361430    => 'Заказ Согласован',
+        29361433    => 'Договор/счет отправлен',
+        29399374    => 'Передан на склад',
+        29548384    => 'Заказ Списан',
+        31654648    => 'заказ собран с дефицитом',
+        30617692    => 'заказ собран без дефицита',
+        29362315    => 'Товар отгружен',
+        29362318    => 'НЕзавершенные',
+        142         => 'Успешно реализовано',
+        143         => 'Закрыто и не реализовано',
+    ];
 
     const INVITE_LINK = 'https://t.me/joinchat/AAAAAFYbg0VE3uan1UOPfw';
 
@@ -57,6 +85,8 @@ abstract class UserCommand extends UserCommandBase {
     const MENU_HISTORY = 'История заказов';
     const MENU_CATALOG = 'Каталог';
     const MENU_NEWS_CHANNEL = 'Рассказывать о новостях';
+
+    const MENU_REQUIRE_CALL = 'Заказать обратный звонок';
 
 
     protected function getState() {
@@ -80,6 +110,8 @@ abstract class UserCommand extends UserCommandBase {
         $chat    = $message->getChat();
         $user    = $message->getFrom();
 
+        $this->chat = $chat;
+        $this->user = $user;
         $this->chat_id = $chat->getId();
         $this->user_id = $user->getId();
         $this->text = trim($message->getText(true));

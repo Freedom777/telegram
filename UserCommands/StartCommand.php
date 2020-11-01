@@ -118,6 +118,12 @@ class StartCommand extends UserCommand
                                 ->setSelective(true);
                         } else {
                             $this->checkInsertUser($phone, null);
+                            $data ['reply_markup'] = new InlineKeyboard([]);
+                            $data ['reply_markup']
+                                ->addRow(new InlineKeyboardButton(['callback_data' => '/callrequire', 'text' => self::MENU_REQUIRE_CALL, 'phone' => $phone]))
+                                ->setResizeKeyboard(true)
+                                ->setOneTimeKeyboard(true)
+                                ->setSelective(true);
                             $answerText = self::ERROR_PHONE_NOT_FOUND .
                                 PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_1') .
                                 PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_2');

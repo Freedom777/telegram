@@ -11,6 +11,7 @@
 namespace Longman\TelegramBot\Commands\SystemCommands;
 
 use Longman\TelegramBot\Commands\SystemCommand;
+use Longman\TelegramBot\Commands\UserCommands\CallRequireCommand;
 use Longman\TelegramBot\Commands\UserCommands\CatalogCommand;
 use Longman\TelegramBot\Commands\UserCommands\HistoryCommand;
 use Longman\TelegramBot\Commands\UserCommands\StatusCommand;
@@ -79,7 +80,13 @@ class CallbackqueryCommand extends SystemCommand
                 // $result = $this->getTelegram()->executeCommand('history');
                 break;
 
-            case '/getcall':
+            case '/callrequire':
+                $telegram = $this->getTelegram();
+                $data = json_decode($telegram->getCustomInput(), true);
+                $data = json_encode(array_merge($data, ['phone' => $callback_data['phone']]));
+                $telegram->setCustomInput($data);
+
+                $result = (new CallRequireCommand($telegram, new Update($update)))->preExecute();
                 break;
 
         }
