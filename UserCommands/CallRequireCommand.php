@@ -53,11 +53,10 @@ class CallRequireCommand extends UserCommand
         $fio = $this->user->getFirstName() . $this->user->getLastName();
         $input = json_decode($this->getTelegram()->getCustomInput(), true);
 
-        $phone = $input['callback']['phone'];
-        /*$result = Request::sendMessage($data);
-        die();*/
+        // $phone = $input['callback']['phone'];
+        $result = Request::sendMessage(var_export($input['callback'], true));
 
-        // $phone = $input->phone;
+        /*// $phone = $input->phone;
         $result = Request::emptyResponse();
 
         try {
@@ -76,7 +75,7 @@ class CallRequireCommand extends UserCommand
             $result = Request::sendMessage($data);
         } catch (AmoWrapException $e) {
             TelegramLog::error($e); // die($e->getMessage()); //Прерывем работу скрипта и выводим текст ошибки
-        }
+        }*/
 
         return $result;
     }
