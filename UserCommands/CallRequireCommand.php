@@ -53,6 +53,10 @@ class CallRequireCommand extends UserCommand
         $fio = $this->user->getFirstName() . $this->user->getLastName();
         $input = json_decode($this->getTelegram()->getCustomInput());
 
+        $data['text'] = var_export($input->phone);
+        $result = Request::sendMessage($data);
+        die();
+
         $phone = $input->phone;
         $result = Request::emptyResponse();
 
