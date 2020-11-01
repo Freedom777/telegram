@@ -65,6 +65,13 @@ class CallbackqueryCommand extends SystemCommand
         // $this->getMessage()->getCommand();
         $command = $callback_query->getMessage()->getCommand();
 
+        $data = [
+            'callback_query_id' => $callback_query_id,
+            'text'              => $command,
+        ];
+
+        return Request::answerCallbackQuery($data);
+
         $result = false;
         switch ($command) {
             /*case 'channel':
