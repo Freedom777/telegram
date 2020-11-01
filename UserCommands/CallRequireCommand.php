@@ -54,7 +54,7 @@ class CallRequireCommand extends UserCommand
         $input = json_decode($this->getTelegram()->getCustomInput(), true);
 
         // $phone = $input['callback']['phone'];
-        $data ['text'] = var_export($input['callback'], true);
+        $data ['text'] = var_export($input, true);
         $result = Request::sendMessage($data);
 
         /*// $phone = $input->phone;
