@@ -81,7 +81,6 @@ class StartCommand extends UserCommand
                     break;
                 }
 
-                // $notes['choice'] = $this->text;
                 $this->notes ['phone'] = $this->text;
                 $this->text = '';
 
@@ -93,35 +92,31 @@ class StartCommand extends UserCommand
                     $this->conversation->update();
                     $contactId = null;
 
-                    $amocrm_user_id = $this->checkAmocrmUser($phone);
-                    if (!empty($amocrm_user_id)) {
-                        // $this->checkInsertUser($phone, $amocrm_user_id);
+                    $amocrmUserId = $this->getAmocrmUserIdByPhone($phone);
+                    if (!empty($amocrmUserId)) {
                         $data = array_merge($data, $this->renderMenu());
                     } else {
                         try {
                             $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
-                        } catch (AmoWrapException $e) {
-                            $answerText = self::ERROR_AMOCRM;
-                        }
 
-                        if (empty($answerText)) {
                             $contacts = $amo->searchContacts($phone); // Ищем контакт по телефону и почте
                             if (!empty($contacts)) {
                                 $contact = current($contacts);
-                                $amocrm_user_id = $contact->getId();
+                                $amocrmUserId = $contact->getId();
                                 $data = array_merge($data, $this->renderMenu());
                             } else {
                                 $data = array_merge($data, $this->renderError($phone));
                                 $this->conversation->stop();
                             }
+                        } catch (AmoWrapException $e) {
+                            $data ['text'] = self::ERROR_AMOCRM;
                         }
                     }
-                    $this->checkInsertUser($phone, $amocrm_user_id);
+                    $this->checkInsertUser($phone, $amocrmUserId);
                 } else {
                     $data ['text'] = 'Вы должны указать 10 цифр в качестве номера телефона.';
                     $this->notes ['state'] = 1;
                 }
-                $data ['text'] = $answerText;
                 $result = Request::sendMessage($data);
 
             case 2:

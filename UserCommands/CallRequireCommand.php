@@ -77,7 +77,6 @@ class CallRequireCommand extends UserCommand
             $data['text'] = 'Спасибо, мы свяжемся с Вами в ближайшее время.';
             $result = Request::sendMessage($data);
         } catch (AmoWrapException $e) {
-            TelegramLog::error(getenv('AMOCRM_DOMAIN') . ' ' . getenv('AMOCRM_USER_EMAIL') . ' ' . getenv('AMOCRM_USER_HASH'));
             TelegramLog::error($e->getCode());
             TelegramLog::error($e); // die($e->getMessage()); //Прерывем работу скрипта и выводим текст ошибки
         }

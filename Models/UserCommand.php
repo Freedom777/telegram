@@ -135,6 +135,26 @@ abstract class UserCommand extends UserCommandBase {
         return implode(',', $phonesEscapedAr);
     }
 
+    protected function getAmocrmUserIdByPhone($phone) {
+        /** @var \PDOStatement $pdoStatement */
+        $sth = DB::getPdo()->prepare('
+                                        SELECT `amocrm_user_id`
+                                        FROM `amocrm_user`
+                                        WHERE `chat_id` = :chat_id AND `phone` = :phone
+                                        ORDER BY `id` DESC
+                                        LIMIT 1'
+        );
+        $sth->execute([
+            ':chat_id' => $this->chat_id,
+            ':phone' => $phone,
+        ]);
+        $exist = $sth->fetch(\PDO::FETCH_ASSOC);
+
+        if (!empty($exist) && !empty($exist['amocrm_user_id'])) {
+            return $exist ['amocrm_user_id'];
+        }
+    }
+
     protected function checkInsertUser($phone, $contactId) {
         // Update table
         if ($this->user_id == $this->chat_id) { // Private chat
@@ -154,20 +174,7 @@ abstract class UserCommand extends UserCommandBase {
                 ]);
                 $exist = $sth->fetch(\PDO::FETCH_ASSOC);
                 if (empty($exist)) {
-                    $sth = DB::getPdo()->prepare('
-                                        INSERT INTO `amocrm_user` SET
-                                        `chat_id` = :chat_id, 
-                                        `amocrm_user_id` = :amocrm_user_id,
-                                        `phone` = :phone,
-                                        `created_at` = :current_date_time,
-                                        `updated_at` = :current_date_time
-                                    ');
-                    $sth->execute([
-                        ':chat_id' => $this->chat_id,
-                        ':amocrm_user_id' => null,
-                        ':phone' => $phone,
-                        ':current_date_time' => $currentDateTime
-                    ]);
+                    $this->insertUser(null, $phone);
                 } else {
                     $sth = DB::getPdo()->prepare('
                                         UPDATE `amocrm_user` SET
@@ -198,20 +205,29 @@ abstract class UserCommand extends UserCommandBase {
                 ]);
                 $exist = $sth->fetch(\PDO::FETCH_ASSOC);
                 if (empty($exist) || $phone != $exist ['phone']) {
-                    $sth = DB::getPdo()->prepare('
-                                            INSERT INTO `amocrm_user` SET
-                                            `chat_id` = :chat_id, 
-                                            `amocrm_user_id` = :amocrm_user_id,
-                                            `phone` = :phone
-                                        ');
-                    $sth->execute([
-                        ':chat_id' => $this->chat_id,
-                        ':amocrm_user_id' => $contactId,
-                        ':phone' => $phone,
-                    ]);
+                    $this->insertUser($contactId, $phone);
                 }
             }
         }
+    }
+
+    protected function insertUser($amocrmUserId, $phone) {
+        $currentDateTime = date('Y-m-d H:i:s');
+
+        $sth = DB::getPdo()->prepare('
+                                            INSERT INTO `amocrm_user` SET
+                                            `chat_id` = :chat_id, 
+                                            `amocrm_user_id` = :amocrm_user_id,
+                                            `phone` = :phone,
+                                            `created_at` = :current_date_time,
+                                            `updated_at` = :current_date_time
+                                        ');
+        $sth->execute([
+            ':chat_id' => $this->chat_id,
+            ':amocrm_user_id' => $amocrmUserId,
+            ':phone' => $phone,
+            ':current_date_time' => $currentDateTime
+        ]);
     }
 
     /**
@@ -246,7 +262,7 @@ abstract class UserCommand extends UserCommandBase {
                                     SELECT `amocrm_user_id`
                                     FROM `amocrm_user`
                                     WHERE `chat_id` = :chat_id
-                                    ORDER BY `id` DESC
+                                    ORDER BY `updated_at` DESC
                                     LIMIT 1'
         );
         $sth->execute([
