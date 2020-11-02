@@ -94,7 +94,7 @@ class StartCommand extends UserCommand
 
                     $amocrmUserId = $this->getAmocrmUserIdByPhone($phone);
                     if (!empty($amocrmUserId)) {
-                        $data = array_merge($data, $this->renderMenu());
+                        $this->renderMenu($data);
                     } else {
                         try {
                             $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
@@ -103,9 +103,9 @@ class StartCommand extends UserCommand
                             if (!empty($contacts)) {
                                 $contact = current($contacts);
                                 $amocrmUserId = $contact->getId();
-                                $data = array_merge($data, $this->renderMenu());
+                                $this->renderMenu($data);
                             } else {
-                                $data = array_merge($data, $this->renderError($phone));
+                                $this->renderError($data, $phone);
                                 $this->conversation->stop();
                             }
                         } catch (AmoWrapException $e) {
@@ -143,9 +143,8 @@ class StartCommand extends UserCommand
         return $result;
     }
 
-    protected function renderMenu()
+    protected function renderMenu(&$data)
     {
-        $data = [];
         // При успешной авторизации вывод меню
         $data ['reply_markup'] = new InlineKeyboard([]);
         $data ['reply_markup']
@@ -162,7 +161,7 @@ class StartCommand extends UserCommand
         return $data;
     }
 
-    protected function renderError($phone)
+    protected function renderError(&$data, $phone)
     {
         $data = [];
         $data ['reply_markup'] = new InlineKeyboard([]);

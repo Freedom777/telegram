@@ -164,13 +164,15 @@ abstract class UserCommand extends UserCommandBase {
 
             return $exist ['amocrm_user_id'];
         }
+
+        return null;
     }
 
-    protected function checkInsertUser($phone, $contactId) {
+    protected function checkInsertUser($phone, $amocrmUserId) {
         // Update table
         if ($this->user_id == $this->chat_id) { // Private chat
             $currentDateTime = date('Y-m-d H:i:s');
-            if (null === $contactId) {
+            if (null === $amocrmUserId) {
                 // Contact in AMOCRM not found
                 $sth = DB::getPdo()->prepare('
                                     SELECT `id`
@@ -212,11 +214,11 @@ abstract class UserCommand extends UserCommandBase {
                 );
                 $sth->execute([
                     ':chat_id' => $this->chat_id,
-                    ':amocrm_user_id' => $contactId,
+                    ':amocrm_user_id' => $amocrmUserId,
                 ]);
                 $exist = $sth->fetch(\PDO::FETCH_ASSOC);
                 if (empty($exist) || $phone != $exist ['phone']) {
-                    $this->insertUser($contactId, $phone);
+                    $this->insertUser($amocrmUserId, $phone);
                 }
             }
         }
