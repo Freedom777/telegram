@@ -91,47 +91,34 @@ class StartCommand extends UserCommand
                 if ($phone !== '' && is_numeric($phone) && $phone > 0 && 10 == strlen($phone)) {
                     $this->notes ['state'] = 1;
                     $this->conversation->update();
+                    $contactId = null;
 
-                    try {
-                        $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
-                    } catch (AmoWrapException $e) {
-                        $answerText = self::ERROR_AMOCRM;
-                    }
+                    $amocrm_user_id = $this->checkAmocrmUser($phone);
+                    if (!empty($amocrm_user_id)) {
+                        // $this->checkInsertUser($phone, $amocrm_user_id);
+                        $data = array_merge($data, $this->renderMenu());
+                    } else {
+                        try {
+                            $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
+                        } catch (AmoWrapException $e) {
+                            $answerText = self::ERROR_AMOCRM;
+                        }
 
-                    if (empty($answerText)) {
-                        $contacts =  $amo->searchContacts($phone); // Ищем контакт по телефону и почте
-                        if (!empty($contacts)) {
-                            $contact = current($contacts);
-                            $this->checkInsertUser($phone, $contact->getId());
-
-                            $answerText = self::SUCCESS_LOGIN;
-
-                            // При успешной авторизации вывод меню
-                            $data ['reply_markup'] = new InlineKeyboard([]);
-                            $data ['reply_markup']
-                                ->addRow(new InlineKeyboardButton(['callback_data' => '/status', 'text' => self::MENU_ORDER_STATUS]))
-                                ->addRow(new InlineKeyboardButton(['callback_data' => '/history', 'text' => self::MENU_HISTORY]))
-                                ->addRow(new InlineKeyboardButton(['callback_data' => '/catalog', 'text' => self::MENU_CATALOG]))
-                                ->addRow(new InlineKeyboardButton(['url' => getenv('CHANNEL_INVITE_LINK'), 'text' => self::MENU_NEWS_CHANNEL]))
-                                ->setResizeKeyboard(true)
-                                ->setOneTimeKeyboard(true)
-                                ->setSelective(true);
-                        } else {
-                            $this->checkInsertUser($phone, null);
-                            $data ['reply_markup'] = new InlineKeyboard([]);
-                            $data ['reply_markup']
-                                ->addRow(new InlineKeyboardButton(['callback_data' => '/callrequire' . ' ' . $phone, 'text' => self::MENU_REQUIRE_CALL]))
-                                ->setResizeKeyboard(true)
-                                ->setOneTimeKeyboard(true)
-                                ->setSelective(true);
-                            $answerText = self::ERROR_PHONE_NOT_FOUND .
-                                PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_1') .
-                                PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_2');
-                            $this->conversation->stop();
+                        if (empty($answerText)) {
+                            $contacts = $amo->searchContacts($phone); // Ищем контакт по телефону и почте
+                            if (!empty($contacts)) {
+                                $contact = current($contacts);
+                                $amocrm_user_id = $contact->getId();
+                                $data = array_merge($data, $this->renderMenu());
+                            } else {
+                                $data = array_merge($data, $this->renderError($phone));
+                                $this->conversation->stop();
+                            }
                         }
                     }
+                    $this->checkInsertUser($phone, $amocrm_user_id);
                 } else {
-                    $answerText = 'Вы должны указать 10 цифр в качестве номера телефона.';
+                    $data ['text'] = 'Вы должны указать 10 цифр в качестве номера телефона.';
                     $this->notes ['state'] = 1;
                 }
                 $data ['text'] = $answerText;
@@ -155,13 +142,47 @@ class StartCommand extends UserCommand
 
                     $this->conversation->stop();
                 }
-            break;
+                break;
         }
 
         return $result;
     }
 
+    protected function renderMenu()
+    {
+        $data = [];
+        // При успешной авторизации вывод меню
+        $data ['reply_markup'] = new InlineKeyboard([]);
+        $data ['reply_markup']
+            ->addRow(new InlineKeyboardButton(['callback_data' => '/status', 'text' => self::MENU_ORDER_STATUS]))
+            ->addRow(new InlineKeyboardButton(['callback_data' => '/history', 'text' => self::MENU_HISTORY]))
+            ->addRow(new InlineKeyboardButton(['callback_data' => '/catalog', 'text' => self::MENU_CATALOG]))
+            ->addRow(new InlineKeyboardButton(['url' => getenv('CHANNEL_INVITE_LINK'), 'text' => self::MENU_NEWS_CHANNEL]))
+            ->setResizeKeyboard(true)
+            ->setOneTimeKeyboard(true)
+            ->setSelective(true);
 
+        $data ['text'] = self::SUCCESS_LOGIN;
+
+        return $data;
+    }
+
+    protected function renderError($phone)
+    {
+        $data = [];
+        $data ['reply_markup'] = new InlineKeyboard([]);
+        $data ['reply_markup']
+            ->addRow(new InlineKeyboardButton(['callback_data' => '/callrequire' . ' ' . $phone, 'text' => self::MENU_REQUIRE_CALL]))
+            ->setResizeKeyboard(true)
+            ->setOneTimeKeyboard(true)
+            ->setSelective(true);
+        $data ['text'] = self::ERROR_PHONE_NOT_FOUND .
+            PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_1') .
+            PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_2');
+
+        return $data;
+
+    }
 }
 /*// Получаем список воронок
                             $pipelines = AmoCRM::getPipelinesName();
