@@ -55,7 +55,6 @@ class CallbackqueryCommand extends SystemCommand
         $callback_query_id = $callback_query->getId();
         $callback_data     = $callback_query->getData();
         $telegram          = $this->getTelegram();
-        TelegramLog::notice($callback_query_id . ' : ' . var_export($callback_data, true));
 
         $update = (array) $this->update;
         $update['message'] = $update['callback_query']['message'];
@@ -65,6 +64,7 @@ class CallbackqueryCommand extends SystemCommand
         // $this->getMessage()->getCommand();
         $commandParts = explode(' ', $callback_data);
         $command = $commandParts [0];
+        TelegramLog::notice($command . ' : ' . var_export($commandParts, true));
 
         $result = false;
         switch ($command) {
