@@ -60,9 +60,6 @@ class StartCommand extends UserCommand
     public function execute()
     {
         $data = $this->prepareInput();
-        $answerText = '';
-        // TelegramLog::notice($text);
-
         $result = Request::emptyResponse();
         $state = $this->getState();
 
@@ -163,7 +160,6 @@ class StartCommand extends UserCommand
 
     protected function renderError(&$data, $phone)
     {
-        $data = [];
         $data ['reply_markup'] = new InlineKeyboard([]);
         $data ['reply_markup']
             ->addRow(new InlineKeyboardButton(['callback_data' => '/callrequire' . ' ' . $phone, 'text' => self::MENU_REQUIRE_CALL]))
