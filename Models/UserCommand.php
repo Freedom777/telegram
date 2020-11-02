@@ -138,7 +138,7 @@ abstract class UserCommand extends UserCommandBase {
     protected function getAmocrmUserIdByPhone($phone) {
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare('
-                                        SELECT `amocrm_user_id`
+                                        SELECT `id`, `amocrm_user_id`
                                         FROM `amocrm_user`
                                         WHERE `chat_id` = :chat_id AND `phone` = :phone
                                         ORDER BY `id` DESC
@@ -151,6 +151,17 @@ abstract class UserCommand extends UserCommandBase {
         $exist = $sth->fetch(\PDO::FETCH_ASSOC);
 
         if (!empty($exist) && !empty($exist['amocrm_user_id'])) {
+            $currentDateTime = date('Y-m-d H:i:s');
+            $sth = DB::getPdo()->prepare('
+                                        UPDATE `amocrm_user` SET
+                                        `updated_at` = :current_date_time
+                                        WHERE `id` = :id
+                                    ');
+            $sth->execute([
+                ':id' => $exist ['id'],
+                ':current_date_time' => $currentDateTime
+            ]);
+
             return $exist ['amocrm_user_id'];
         }
     }
