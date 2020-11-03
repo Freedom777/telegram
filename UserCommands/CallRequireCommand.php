@@ -50,8 +50,8 @@ class CallRequireCommand extends UserCommand
      */
     public function execute() {
         $data = $this->prepareInput();
-        $fio = $this->user->getFirstName() . (!empty($this->user->getLastName()) ? ' ' . $this->user->getLastName() : '') .
-            ' (' . $this->user->getUsername() . ')';
+        $fio = $this->chat->getFirstName() . (!empty($this->chat->getLastName()) ? ' ' . $this->chat->getLastName() : '') .
+            ' (' . $this->chat->getUsername() . ')';
         // $input = json_decode($this->getTelegram()->getCustomInput(), true);
         $phone = '+38' . $this->text;
 
