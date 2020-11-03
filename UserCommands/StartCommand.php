@@ -92,6 +92,7 @@ class StartCommand extends UserCommand
                     $amocrmUserId = $this->getAmocrmUserIdByPhone($phone);
                     if (!empty($amocrmUserId)) {
                         $this->renderMenu($data);
+                        $this->conversation->stop();
                     } else {
                         try {
                             $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
@@ -101,13 +102,13 @@ class StartCommand extends UserCommand
                                 $contact = current($contacts);
                                 $amocrmUserId = $contact->getId();
                                 $this->renderMenu($data);
+                                $this->conversation->stop();
                             } else {
                                 $this->renderError($data, $phone);
                             }
                         } catch (AmoWrapException $e) {
                             $data ['text'] = self::ERROR_AMOCRM;
                         }
-                        $this->conversation->stop();
                     }
                     $this->checkInsertUser($phone, $amocrmUserId);
                 } else {
