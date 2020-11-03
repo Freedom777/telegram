@@ -81,8 +81,8 @@ abstract class UserCommand extends UserCommandBase {
         'Ваш номер не найден.' . PHP_EOL .
         'Введите номер, с которого Вы делали заказ.' . PHP_EOL .
         'Для уточнения статуса заказов свяжитесь с менеджером по телефонам:'  . PHP_EOL .
-        '%d' . PHP_EOL .
-        '%d';
+        '%s' . PHP_EOL .
+        '%s';
     const SUCCESS_LOGIN = 'Успешная авторизация.';
     const LEADS_NOT_FOUND = 'Сделок не найдено.';
 
