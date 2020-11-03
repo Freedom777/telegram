@@ -2,20 +2,41 @@
 
 use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use DrillCoder\AmoCRM_Wrap\AmoWrapException;
+use DrillCoder\AmoCRM_Wrap\Contact;
+use DrillCoder\AmoCRM_Wrap\Lead;
+use Longman\TelegramBot\Request;
+use Models\Unsorted;
+use Models\UserCommand;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
+$phone = '+380677749091';
+$text = 'Try ... ';
+
 try {
     $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
+    $contact = new Contact();
+    $contact->setName('Олег')
+        ->addPhone($phone); //Создаём контакт, который будет создан в црм после принятия заявки в неразобранном
+    $lead = new Lead();
+    $lead->setName('Заказ звонка')
+        ->setSale(0); //Создаём сделку, которая будет создана в црм после принятия заявки в неразобранном
+    $unsorted = new Unsorted('Форма обратного звонка', $lead, [$contact], UserCommand::PIPELINE_ID);
+    $unsorted->addNote('Позвонить по номеру ' . $phone)
+        ->save(); // Сохраняем всё в неразобранное в црм
+
+    $text .= 'Спасибо, мы свяжемся с Вами в ближайшее время.';
+    // $result = Request::sendMessage($data);
+
 } catch (AmoWrapException $e) {
-    die($e->getMessage());
+    $text .= $e->getMessage();
 }
 
-var_dump(AmoCRM::getCustomFields('lead'));
-die();
+// var_dump(AmoCRM::getCustomFields('lead'));
+die($text);
 
 $pipelineId = 1979362; // id Воронки
 $statusId = 142; // id Статуса: Успешно реализовано
