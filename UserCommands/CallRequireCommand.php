@@ -7,7 +7,7 @@ use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use DrillCoder\AmoCRM_Wrap\AmoWrapException;
 use DrillCoder\AmoCRM_Wrap\Contact;
 use DrillCoder\AmoCRM_Wrap\Lead;
-use DrillCoder\AmoCRM_Wrap\Unsorted;
+use Models\Unsorted;
 use Longman\TelegramBot\Entities\InlineKeyboard;
 use Longman\TelegramBot\Entities\InlineKeyboardButton;
 use Longman\TelegramBot\Exception\TelegramException;

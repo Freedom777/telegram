@@ -10,7 +10,8 @@
     "php-telegram-bot/telegram-bot-manager": "^1.5",
     "vlucas/phpdotenv": "^4.1",
     "monolog/monolog": "^2.0",
-    "drillcoder/amocrm_wrap": "^7.0"
+    "drillcoder/amocrm_wrap": "^7.0",
+    "ext-mbstring": "*"
   },
   "autoload": {
     "psr-4": {
