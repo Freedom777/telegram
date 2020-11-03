@@ -103,11 +103,11 @@ class StartCommand extends UserCommand
                                 $this->renderMenu($data);
                             } else {
                                 $this->renderError($data, $phone);
-                                $this->conversation->stop();
                             }
                         } catch (AmoWrapException $e) {
                             $data ['text'] = self::ERROR_AMOCRM;
                         }
+                        $this->conversation->stop();
                     }
                     $this->checkInsertUser($phone, $amocrmUserId);
                 } else {

@@ -77,7 +77,7 @@ abstract class UserCommand extends UserCommandBase {
     const INVITE_LINK = 'https://t.me/joinchat/AAAAAFYbg0VE3uan1UOPfw';
 
     const ERROR_AMOCRM = 'Ошибка при подключении к хранилищу.';
-    const ERROR_PHONE_NOT_FOUND = 'Ваш номер не найден. Для уточнения статуса заказов свяжитесь с менеджером.';
+    const ERROR_PHONE_NOT_FOUND = 'Ваш номер не найден.' . PHP_EOL . 'Для уточнения статуса заказов свяжитесь с менеджером или введите номер, с которого Вы делали заказ.';
     const SUCCESS_LOGIN = 'Успешная авторизация.';
     const LEADS_NOT_FOUND = 'Сделок не найдено.';
 
