@@ -127,7 +127,7 @@ class Unsorted extends Base
                     ),
                 ),
             );
-            TelegramLog::notice(var_export($request, true));
+
             $response = self::cUrl('api/v2/incoming_leads/form', $request);
             if ($response !== null && $response->status === 'success') {
                 $this->id = $response->data[0];
@@ -167,15 +167,20 @@ class Unsorted extends Base
      */
     protected static function cUrl($url, $data = array(), \DateTime $modifiedSince = null, $ajax = false)
     {
-        $url = 'https://' . self::$domain . '.amocrm.ru/' . $url;
         $isUnsorted = mb_stripos($url, 'incoming_leads') !== false;
-        if ($isUnsorted) {
-            $url .= '&login=' . self::$userLogin . '&api_key=' . self::$userAPIKey;
+
+        $url = 'https://' . self::$domain . '.amocrm.ru/' . $url;
+        $query = parse_url($url, PHP_URL_QUERY);
+
+        if (empty($query)) {
+            $url .= '?';
         } else {
-            if (mb_strpos($url, '?') === false) {
-                $url .= '?';
-            }
-            $url .= '&USER_LOGIN=' . self::$userLogin . '&USER_HASH=' . self::$userAPIKey;
+            $url .= '&';
+        }
+        if ($isUnsorted) {
+            $url .= 'login=' . self::$userLogin . '&api_key=' . self::$userAPIKey;
+        } else {
+            $url .= 'USER_LOGIN=' . self::$userLogin . '&USER_HASH=' . self::$userAPIKey;
         }
 
         $curl = curl_init();
