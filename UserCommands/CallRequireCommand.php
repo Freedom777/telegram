@@ -68,8 +68,8 @@ class CallRequireCommand extends UserCommand
             $contact->setName($fio)
                 ->addPhone($phone); //Создаём контакт, который будет создан в црм после принятия заявки в неразобранном
             $lead = new Lead();
-            $lead->setName('Заказ звонка')
-                ->setSale(0); //Создаём сделку, которая будет создана в црм после принятия заявки в неразобранном
+            $lead->setName('Заказ звонка');
+                // ->setSale(0); //Создаём сделку, которая будет создана в црм после принятия заявки в неразобранном
             $unsorted = new Unsorted('Форма обратного звонка', $lead, [$contact], self::PIPELINE_NAME);
             $unsorted->addNote('Позвонить по номеру ' . $phone)
                 ->save(); // Сохраняем всё в неразобранное в црм
