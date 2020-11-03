@@ -127,7 +127,7 @@ class Unsorted extends Base
                     ),
                 ),
             );
-            TelegramLog::notice(var_export($request));
+            TelegramLog::notice(var_export($request, true));
             $response = self::cUrl('api/v2/incoming_leads/form', $request);
             if ($response !== null && $response->status === 'success') {
                 $this->id = $response->data[0];
