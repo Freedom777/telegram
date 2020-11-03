@@ -166,9 +166,7 @@ class StartCommand extends UserCommand
             ->setResizeKeyboard(true)
             ->setOneTimeKeyboard(true)
             ->setSelective(true);
-        $data ['text'] = self::ERROR_PHONE_NOT_FOUND .
-            PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_1') .
-            PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_2');
+        $data ['text'] = vsprintf(self::ERROR_PHONE_NOT_FOUND, [getenv('AMOCRM_MANAGER_PHONE_1'), getenv('AMOCRM_MANAGER_PHONE_2')]);
 
         return $data;
 
