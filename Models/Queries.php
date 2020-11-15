@@ -44,6 +44,8 @@ class Queries {
               AND `created_at` >= :start_search 
               AND `created_at` <= :end_search
         ';
+        return self::getSql($sql, $statuses);
+
         // return $sql;
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare($sql);
@@ -52,4 +54,20 @@ class Queries {
 
         return $cronIds;
     }
+
+    public static function getSql($string,$data) {
+        $indexed = ($data == array_values($data));
+        foreach($data as $k=>$v) {
+            if (is_string($v)) {
+                $v = '"' . $v . '"';
+            }
+            if ($indexed) {
+                $string=preg_replace('/\?/', $v, $string, 1);
+            } else {
+                $string=str_replace(':' . $k, $v, $string);
+            }
+        }
+        return $string;
+    }
+
 }
