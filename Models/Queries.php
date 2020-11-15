@@ -25,7 +25,7 @@ class Queries {
         $whereIn = '';
         if (!empty($statuses)) {
             $params = array_combine(
-                array_map(function($i){ return ':statusId'.$i; }, array_keys($statuses)),
+                array_map(function($i){ return 'statusId'.$i; }, array_keys($statuses)),
                 $statuses
             );
             $whereIn = 'AND ' . '`status` IN (' . implode(',', array_keys($statuses)) . ')';
@@ -45,7 +45,6 @@ class Queries {
               AND `created_at` <= :end_search
         ';
 
-        return $params;
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare($sql);
         $sth->execute($params);
