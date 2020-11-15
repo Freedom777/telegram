@@ -45,6 +45,8 @@ class Queries {
               AND `created_at` <= :end_search
         ';
 
+        return self::getSql($sql, $params);
+
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare($sql);
         $sth->execute($params);
