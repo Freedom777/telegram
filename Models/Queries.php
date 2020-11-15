@@ -48,7 +48,7 @@ class Queries {
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare($sql);
         $sth->execute($params);
-        $cronIds = $sth->fetchAll(\PDO::FETCH_ASSOC);
+        $cronIds = $sth->fetchColumn();
 
         return $cronIds;
     }
