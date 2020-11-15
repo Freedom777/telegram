@@ -30,6 +30,7 @@ class Queries {
         $whereIn = '';
         if (!empty($statuses)) {
             $whereIn = 'AND ' . '`status` IN (' . str_repeat('?,', count($statuses) - 1) . '?' . ')';
+            $params = array_merge($statuses, $params);
         }
 
         $sql = '
