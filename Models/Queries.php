@@ -28,7 +28,7 @@ class Queries {
                 array_map(function($i){ return 'statusId'.$i; }, array_keys($statuses)),
                 $statuses
             );
-            $whereIn = 'AND ' . '`status` IN (' . implode(',', array_keys($statuses)) . ')';
+            $whereIn = 'AND ' . '`status` IN (' . implode(',', $statuses) . ')';
         }
         $params = array_merge($params, [
             'type' => $type,
