@@ -44,7 +44,7 @@ class Queries {
               AND `created_at` >= :start_search 
               AND `created_at` <= :end_search
         ';
-        return $params;
+
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare($sql);
         $sth->execute($params);
