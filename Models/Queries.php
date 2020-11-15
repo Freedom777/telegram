@@ -29,8 +29,11 @@ class Queries {
         ];
         $whereIn = '';
         if (!empty($statuses)) {
-            $whereIn = 'AND ' . '`status` IN (' . str_repeat('?,', count($statuses) - 1) . '?' . ')';
-            $params = array_merge($statuses, $params);
+            $statuses = array_combine(
+                array_map(function($i){ return ':statusId'.$i; }, array_keys($statuses)),
+                $statuses
+            );
+            $whereIn = 'AND ' . '`status` IN (' . implode(',', array_keys($statuses)) . ')';
         }
 
         $sql = '
@@ -41,8 +44,8 @@ class Queries {
               AND `created_at` >= :start_search 
               AND `created_at` <= :end_search
         ';
-        return $sql;
-            /** @var \PDOStatement $pdoStatement */
+        // return $sql;
+        /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare($sql);
         $sth->execute($params);
         $cronIds = $sth->fetchAll(\PDO::FETCH_ASSOC);
