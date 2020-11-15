@@ -22,19 +22,19 @@ class Queries {
     }
 
     public static function getCronMessageIds(\DateTime $fromDateTime, \DateTime $toDateTime, string $type, array $statuses = []) {
-        $params = [
-            'type' => $type,
-            'start_search' => $fromDateTime->format('Y-m-d H:i:s'),
-            'end_search' => $toDateTime->format('Y-m-d H:i:s'),
-        ];
         $whereIn = '';
         if (!empty($statuses)) {
-            $statuses = array_combine(
+            $params = array_combine(
                 array_map(function($i){ return ':statusId'.$i; }, array_keys($statuses)),
                 $statuses
             );
             $whereIn = 'AND ' . '`status` IN (' . implode(',', array_keys($statuses)) . ')';
         }
+        $params = array_merge($params, [
+            'type' => $type,
+            'start_search' => $fromDateTime->format('Y-m-d H:i:s'),
+            'end_search' => $toDateTime->format('Y-m-d H:i:s'),
+        ]);
 
         $sql = '
             SELECT `id` FROM  `cron_message`
