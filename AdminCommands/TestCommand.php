@@ -7,6 +7,7 @@ use Longman\TelegramBot\Conversation;
 use Longman\TelegramBot\Entities\Keyboard;
 use Models\AdminCommand;
 use Longman\TelegramBot\Request;
+use Models\Queries;
 
 class TestCommand extends AdminCommand {
     /**
@@ -26,6 +27,21 @@ class TestCommand extends AdminCommand {
 
     public function execute()
     {
+        $chat_id = 688516706;
+        $result = Queries::getCronMessageIds(
+            new \DateTime('2020-07-09 19:00:30'),
+            new \DateTime('2020-07-25 19:00:23'),
+            self::REMIND_NO_ORDER,
+            [self::STATUS_SENT, self::STATUS_REMINDED]
+        );
+        $data = [
+            'chat_id' => $chat_id,
+            'text' => var_export($result, true),
+        ];
+        $result = Request::sendMessage($data);
+        die();
+
+
         $chat_id = 688516706;
         $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
