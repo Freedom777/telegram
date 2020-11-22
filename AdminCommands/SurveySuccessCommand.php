@@ -21,7 +21,7 @@ class SurveySuccessCommand extends AdminCommand
     /**
      * @var string
      */
-    protected $description = 'Survey for success buy.';
+    protected $description = 'Survey for success order.';
 
     /**
      * @var string

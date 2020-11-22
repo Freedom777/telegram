@@ -19,26 +19,26 @@ use Longman\TelegramBot\Request;
 use Models\AdminCommand;
 
 /**
- * Admin "/surveysuccess" command
+ * Admin "/surveyfail" command
  *
  * Command that demonstrated the Conversation funtionality in form of a simple survey.
  */
-class SurveySuccessCommand extends AdminCommand
+class SurveyFailCommand extends AdminCommand
 {
     /**
      * @var string
      */
-    protected $name = 'surveysuccess';
+    protected $name = 'surveyfail';
 
     /**
      * @var string
      */
-    protected $description = 'Survey for success buy.';
+    protected $description = 'Survey for failed order.';
 
     /**
      * @var string
      */
-    protected $usage = '/surveysuccess';
+    protected $usage = '/surveyfail';
 
     /**
      * @var string

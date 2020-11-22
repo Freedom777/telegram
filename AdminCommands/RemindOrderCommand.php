@@ -88,7 +88,7 @@ class RemindOrderCommand extends AdminCommand
                 $this->text = '';
 
             case 1:
-                if (isset($this->notes ['reason'])) {
+                if (isset($this->notes ['reason']) && strlen($this->notes ['reason']) > 0) {
                     $this->notes ['state'] = 1;
                     $this->conversation->update();
 
