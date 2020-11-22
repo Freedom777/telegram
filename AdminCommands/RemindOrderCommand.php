@@ -2,11 +2,14 @@
 
 namespace Longman\TelegramBot\Commands\AdminCommands;
 
+use DrillCoder\AmoCRM_Wrap\AmoWrapException;
 use Longman\TelegramBot\Entities\InlineKeyboard;
 use Longman\TelegramBot\Entities\InlineKeyboardButton;
 use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Request;
+use Longman\TelegramBot\TelegramLog;
 use Models\AdminCommand;
+use Models\Amo;
 use Models\Queries;
 
 /**
@@ -64,18 +67,22 @@ class RemindOrderCommand extends AdminCommand
         $result = Request::emptyResponse();
 
         $data = $this->prepareInput();
-        $state = $this->getState();
+        $state = $this->getConversationState();
+        $amocrmUser = Queries::getAmocrmUserByChatId($this->chat_id);
+
+        $phone = '';
+        if (!empty($amocrmUser)) {
+            $phone = $amocrmUser ['phone'];
+        }
 
         switch ($state) {
             case 0:
                 if ($this->text === '') {
                     $this->conversation->update();
 
-                    $phone = Queries::getAmocrmUserByChatId($this->chat_id);
-
                     $data ['reply_markup'] = new InlineKeyboard([]);
                     $data ['reply_markup']
-                        ->addRow(new InlineKeyboardButton(['callback_data' => '/callrequire' . ' ' . $phone, 'text' => self::MENU_REQUIRE_CALL]))
+                        ->addRow(new InlineKeyboardButton(['callback_data' => '/callrequire' . ' ' . $phone, 'text' => self::$MENU_REQUIRE_CALL]))
                         ->setResizeKeyboard(true)
                         ->setOneTimeKeyboard(true)
                         ->setSelective(true);
@@ -92,15 +99,26 @@ class RemindOrderCommand extends AdminCommand
                     $this->notes ['state'] = 1;
                     $this->conversation->update();
 
+                    $fio = $this->chat->getFirstName() . (!empty($this->chat->getLastName()) ? ' ' . $this->chat->getLastName() : '') .
+                        ' (' . $this->chat->getUsername() . ')';
+
+                    Amo::createUnsorted([
+                        'fio' => $fio,
+                        'phone' => $phone,
+                        'leadName' => 'Обратная связь',
+                        'formName' => 'Форма обратной связи',
+                        'note' => 'Пользователь с номером телефона ' . '+38' . $phone .
+                            ' давно не делал покупок, так как "' . $this->notes ['reason'] . '"',
+                    ]);
+
                     $data = array_merge($data, [
                         'reply_markup' => Keyboard::remove(['selective' => true]),
                         'text' => 'Спасибо за обратную связь!',
                     ]);
-
                     $this->conversation->stop();
                     $result = Request::sendMessage($data);
                 }
-                break;
+            break;
         }
 
         return $result;

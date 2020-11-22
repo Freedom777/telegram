@@ -63,7 +63,7 @@ class SurveySuccessCommand extends AdminCommand
         $result = Request::emptyResponse();
 
         $data = $this->prepareInput();
-        $state = $this->getState();
+        $state = $this->getConversationState();
 
         switch ($state) {
             case 0:

@@ -24,7 +24,7 @@ try {
     $lead = new Lead();
     $lead->setName('Заказ звонка')
         ->setSale(0); //Создаём сделку, которая будет создана в црм после принятия заявки в неразобранном
-    $unsorted = new Unsorted('Форма обратного звонка', $lead, [$contact], UserCommand::PIPELINE_ID);
+    $unsorted = new Unsorted('Форма обратного звонка', $lead, [$contact], UserCommand::$PIPELINE_ID);
     $unsorted->addNote('Позвонить по номеру ' . $phone)
         ->save(); // Сохраняем всё в неразобранное в црм
 

@@ -31,8 +31,8 @@ class BillSentCronCommand extends AdminCommand
     {
         $message = $this->getMessage();
         $text = trim($message->getText(true));
-        $dateTimeZone = new \DateTimeZone(self::TIMEZONE);
-        $pipelineId = self::PIPELINE_ID; // id Воронки
+        $dateTimeZone = new \DateTimeZone(getenv('TIMEZONE'));
+        $pipelineId = self::$PIPELINE_ID; // id Воронки
         $statusId = 29361433; // id Статуса: Договор/счет отправлен
 
         try {
@@ -97,7 +97,7 @@ class BillSentCronCommand extends AdminCommand
                         `chat_id` = NULL,
                         `phones` = :phones,
                         `type` = :type,
-                        `status` = ' . self::STATUS_TO_SEND . ',
+                        `status` = ' . self::$STATUS_TO_SEND . ',
                         `created_at` = :created_at,
                         `updated_at` = :created_at 
                     ');
@@ -129,7 +129,7 @@ class BillSentCronCommand extends AdminCommand
                 SELECT `id` FROM  `cron_message`
                 WHERE `type` = "' . self::BILL_SENT . '"
                   AND `amocrm_status_id` = ' . $statusId .
-                ' AND `status` = ' . self::STATUS_SENT .
+                ' AND `status` = ' . self::$STATUS_SENT .
                 ' AND `created_at` >= "' . $startSearch->format('Y-m-d H:i:s') . '"' .
                 ' AND `created_at` <= "' . $endSearch->format('Y-m-d H:i:s') . '"'
                 , PDO::FETCH_ASSOC);
@@ -141,7 +141,7 @@ class BillSentCronCommand extends AdminCommand
             if (!empty($messagesAr)) {
                 $sth = DB::getPdo()->prepare('
                     UPDATE `cron_message` SET 
-                        `status` = ' . self::STATUS_REMIND . ',
+                        `status` = ' . self::$STATUS_REMIND . ',
                         `updated_at` = NOW()
                     WHERE `id` IN (' . implode(',', $messagesAr) . ')
                 ');

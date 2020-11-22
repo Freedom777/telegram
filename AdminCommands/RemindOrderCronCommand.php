@@ -35,7 +35,7 @@ class RemindOrderCronCommand extends AdminCommand {
         foreach ($pdoStatement as $row) {
             $resultAr [$row['user_id']] = $row ['text'];
         }*/
-        $dateTimeZone = new \DateTimeZone(self::TIMEZONE);
+        $dateTimeZone = new \DateTimeZone(getenv('TIMEZONE'));
 
         try {
             $amocrmUsersResult = Queries::select('amocrm_user', [
@@ -55,7 +55,7 @@ class RemindOrderCronCommand extends AdminCommand {
 
                 $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
-                $pipelineId = self::PIPELINE_ID; // id Воронки
+                $pipelineId = self::$PIPELINE_ID; // id Воронки
 
                 /** @var \DateTime $startSearch */
                 $startSearch = new \DateTime(date('Y-m-d 00:00:00'), $dateTimeZone);
@@ -82,7 +82,7 @@ class RemindOrderCronCommand extends AdminCommand {
                             'chat_id' => $chatAr ['chat_id'],
                             'phones' => $chatAr ['phone'],
                             'type' => self::REMIND_NO_ORDER,
-                            'status' => self::STATUS_TO_SEND,
+                            'status' => self::$STATUS_TO_SEND,
                             'created_at' => $currentDateTime,
                             'updated_at' => $currentDateTime,
                         ]);
@@ -99,10 +99,10 @@ class RemindOrderCronCommand extends AdminCommand {
             $endSearch = new \DateTime(date('Y-m-d 23:59:59'), $dateTimeZone);
             $endSearch->modify($remindAgainDays);
 
-            $messagesAr = Queries::getCronMessageIds($startSearch, $endSearch, self::REMIND_NO_ORDER, [self::STATUS_SENT, self::STATUS_REMINDED]);
+            $messagesAr = Queries::getCronMessageIds($startSearch, $endSearch, self::REMIND_NO_ORDER, [self::$STATUS_SENT, self::$STATUS_REMINDED]);
             if (!empty($messagesAr)) {
                 Queries::update('cron_message', [
-                    'status' => self::STATUS_REMIND,
+                    'status' => self::$STATUS_REMIND,
                     'updated_at' => Queries::now(),
                 ], [
                     'id' => $messagesAr,

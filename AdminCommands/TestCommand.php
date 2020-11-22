@@ -32,7 +32,7 @@ class TestCommand extends AdminCommand {
             new \DateTime('2020-07-09 19:00:30'),
             new \DateTime('2020-07-25 19:00:23'),
             self::REMIND_NO_ORDER,
-            [self::STATUS_SENT, self::STATUS_REMINDED]
+            [self::$STATUS_SENT, self::$STATUS_REMINDED]
         );
         $data = [
             'chat_id' => $chat_id,

@@ -61,7 +61,7 @@ class StartCommand extends UserCommand
     {
         $data = $this->prepareInput();
         $result = Request::emptyResponse();
-        $state = $this->getState();
+        $state = $this->getConversationState();
 
         switch ($state) {
             // Приветствие, запрос номера телефона
@@ -163,11 +163,11 @@ class StartCommand extends UserCommand
     {
         $data ['reply_markup'] = new InlineKeyboard([]);
         $data ['reply_markup']
-            ->addRow(new InlineKeyboardButton(['callback_data' => '/callrequire' . ' ' . $phone, 'text' => self::MENU_REQUIRE_CALL]))
+            ->addRow(new InlineKeyboardButton(['callback_data' => '/callrequire' . ' ' . $phone, 'text' => self::$MENU_REQUIRE_CALL]))
             ->setResizeKeyboard(true)
             ->setOneTimeKeyboard(true)
             ->setSelective(true);
-        $data ['text'] = vsprintf(self::ERROR_PHONE_NOT_FOUND, [getenv('AMOCRM_MANAGER_PHONE_1'), getenv('AMOCRM_MANAGER_PHONE_2')]);
+        $data ['text'] = vsprintf(self::$ERROR_PHONE_NOT_FOUND, [getenv('AMOCRM_MANAGER_PHONE_1'), getenv('AMOCRM_MANAGER_PHONE_2')]);
 
         return $data;
 

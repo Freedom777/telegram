@@ -32,15 +32,15 @@ class SurveySuccessCronCommand extends AdminCommand {
         try {
             $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
 
-            $pipelineId = self::PIPELINE_ID; // id Воронки
+            $pipelineId = self::$PIPELINE_ID; // id Воронки
             $statusId = 142; // id Статуса: Успешно реализовано
 
             /** @var \DateTime $startSearch */
-            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone(self::TIMEZONE));
+            $startSearch = new \DateTime(date('Y-m-d 00:00:00'), new \DateTimeZone(getenv('TIMEZONE')));
             // Yesterday from 00:00, one Survey for each day
             $startSearch->modify('-1 days');
 
-            $endSearch = new \DateTime(date('Y-m-d 23:59:59'), new \DateTimeZone(self::TIMEZONE));
+            $endSearch = new \DateTime(date('Y-m-d 23:59:59'), new \DateTimeZone(getenv('TIMEZONE')));
             $endSearch->modify('-1 days');
 
             /** @var \DrillCoder\AmoCRM_Wrap\Lead[] $leads */
@@ -90,7 +90,7 @@ class SurveySuccessCronCommand extends AdminCommand {
                     `chat_id` = NULL,
                     `phones` = :phones,
                     `type` = :type,
-                    `status` = ' . self::STATUS_TO_SEND . ',
+                    `status` = ' . self::$STATUS_TO_SEND . ',
                     `created_at` = :created_at,
                     `updated_at` = :created_at 
                 ');

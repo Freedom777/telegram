@@ -3,14 +3,8 @@
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
-use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use DrillCoder\AmoCRM_Wrap\AmoWrapException;
-use DrillCoder\AmoCRM_Wrap\Contact;
-use DrillCoder\AmoCRM_Wrap\Lead;
-use Models\Unsorted;
-use Longman\TelegramBot\Entities\InlineKeyboard;
-use Longman\TelegramBot\Entities\InlineKeyboardButton;
-use Longman\TelegramBot\Exception\TelegramException;
+use Models\Amo;
 use Longman\TelegramBot\Request;
 use Longman\TelegramBot\TelegramLog;
 use Models\UserCommand;
@@ -52,34 +46,22 @@ class CallRequireCommand extends UserCommand
         $data = $this->prepareInput();
         $fio = $this->chat->getFirstName() . (!empty($this->chat->getLastName()) ? ' ' . $this->chat->getLastName() : '') .
             ' (' . $this->chat->getUsername() . ')';
-        // $input = json_decode($this->getTelegram()->getCustomInput(), true);
         $phone = '+38' . $this->text;
 
-        // $phone = $input['callback']['phone'];
-        /*$data ['text'] = $phone;
-        $result = Request::sendMessage($data);*/
-
-        // $phone = $input->phone;
-        $result = Request::emptyResponse();
-
         try {
-            $amo = new AmoCRM(getenv('AMOCRM_DOMAIN'), getenv('AMOCRM_USER_EMAIL'), getenv('AMOCRM_USER_HASH'));
-            $contact = new Contact();
-            $contact->setName($fio)
-                ->addPhone($phone); //Создаём контакт, который будет создан в црм после принятия заявки в неразобранном
-            $lead = new Lead();
-            $lead->setName('Заказ звонка');
-                // ->setSale(0); //Создаём сделку, которая будет создана в црм после принятия заявки в неразобранном
-            $unsorted = new Unsorted('Форма обратного звонка', $lead, [$contact], self::PIPELINE_NAME);
-            $unsorted->addNote('Позвонить по номеру ' . $phone)
-                ->save(); // Сохраняем всё в неразобранное в црм
-
-            $data['text'] = 'Спасибо, мы свяжемся с Вами в ближайшее время.';
-            $result = Request::sendMessage($data);
+            Amo::createUnsorted([
+                'fio' => $fio,
+                'phone' => $phone,
+                'leadName' => 'Заказ звонка',
+                'formName' => 'Форма обратного звонка',
+                'note' => 'Позвонить по номеру ' . $phone,
+            ]);
         } catch (AmoWrapException $e) {
-            TelegramLog::error($e->getCode());
-            TelegramLog::error($e); // die($e->getMessage()); //Прерывем работу скрипта и выводим текст ошибки
+            TelegramLog::error($e);
         }
+
+        $data['text'] = 'Спасибо, мы свяжемся с Вами в ближайшее время.';
+        $result = Request::sendMessage($data);
 
         return $result;
     }

@@ -50,7 +50,7 @@ class SendCronCommand extends AdminCommand {
         $pdoStatement = DB::getPdo()->query('
             SELECT *
             FROM `cron_message`
-            WHERE `status` IN (' . self::STATUS_TO_SEND . ',' . self::STATUS_REMIND . ')'
+            WHERE `status` IN (' . self::$STATUS_TO_SEND . ',' . self::$STATUS_REMIND . ')'
             , PDO::FETCH_ASSOC);
         $messages = [];
         foreach ($pdoStatement as $row) {
@@ -83,9 +83,9 @@ class SendCronCommand extends AdminCommand {
                     break;
                 case self::BILL_SENT:
                     $text = '';
-                    if ($message ['status'] == self::STATUS_TO_SEND) {
+                    if ($message ['status'] == self::$STATUS_TO_SEND) {
                         $text = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'billsent.php';
-                    } elseif ($message ['status'] == self::STATUS_REMIND) {
+                    } elseif ($message ['status'] == self::$STATUS_REMIND) {
                         $text = vsprintf(require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'billsent_again.php', [$message ['amocrm_lead_id']]);
                     }
                     $data ['text'] = $text;
@@ -137,19 +137,19 @@ class SendCronCommand extends AdminCommand {
 
         if (!empty($sentMessages)) {
             Queries::update('cron_message', [
-                'status' => self::STATUS_SENT,
+                'status' => self::$STATUS_SENT,
                 'updated_at' => Queries::now(),
             ], [
                 'id' => $sentMessages,
-                'status' => self::STATUS_TO_SEND,
+                'status' => self::$STATUS_TO_SEND,
             ]);
 
             Queries::update('cron_message', [
-                'status' => self::STATUS_REMINDED,
+                'status' => self::$STATUS_REMINDED,
                 'updated_at' => Queries::now(),
             ], [
                 'id' => $sentMessages,
-                'status' => self::STATUS_REMIND,
+                'status' => self::$STATUS_REMIND,
             ]);
         }
 

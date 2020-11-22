@@ -3,10 +3,10 @@
 namespace Models;
 
 class Queries extends BasePdo {
-    public static function getAmocrmUserByChatId($chatId) {
+    public static function getAmocrmUserByChatId($chatId, $fields = ['*']) {
         /** @var \PDOStatement $pdoStatement */
         $sth = self::select('amocrm_user', [
-            'fields' => '*',
+            'fields' => $fields,
             'where' => [
                 'chat_id' => $chatId,
             ],
