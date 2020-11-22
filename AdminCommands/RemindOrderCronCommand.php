@@ -7,6 +7,7 @@ use DrillCoder\AmoCRM_Wrap\AmoWrapException;
 use Longman\TelegramBot\TelegramLog;
 use Models\AdminCommand;
 use Longman\TelegramBot\DB;
+use Models\Queries;
 use PDO;
 use PDOStatement;
 
@@ -37,15 +38,13 @@ class RemindOrderCronCommand extends AdminCommand {
         $dateTimeZone = new \DateTimeZone(self::TIMEZONE);
 
         try {
-            /** @var PDOStatement $pdoStatement */
-            $pdoStatement = DB::getPdo()->query('
-                SELECT `amocrm_user_id`, `chat_id`, `phone`
-                FROM `amocrm_user`
-                GROUP BY `amocrm_user_id`
-                ORDER BY `id` DESC'
-                , PDO::FETCH_ASSOC);
+            $amocrmUsersResult = Queries::select('amocrm_user', [
+                'fields' => ['amocrm_user_id', 'chat_id', 'phone'],
+                'group' => 'amocrm_user_id',
+                'order' => ['id' => 'DESC'],
+            ]);
             $amocrmUsersAr = [];
-            foreach ($pdoStatement as $row) {
+            foreach ($amocrmUsersResult as $row) {
                 $amocrmUsersAr [(int) $row['amocrm_user_id']] = [
                     'chat_id' => (int) $row ['chat_id'],
                     'phone' => $row ['phone']
@@ -73,24 +72,19 @@ class RemindOrderCronCommand extends AdminCommand {
                 $amocrmUsersAr = array_diff_key($amocrmUsersAr, $leadUsersAr);
 
                 if (!empty($amocrmUsersAr)) {
-                    $sth = DB::getPdo()->prepare('
-                    INSERT INTO `cron_message` SET 
-                    `amocrm_user_id` = :amocrm_user_id,
-                    `amocrm_lead_id` = NULL,
-                    `amocrm_status_id` = NULL,
-                    `chat_id` = :chat_id,
-                    `phones` = :phones,
-                    `type` = :type,
-                    `status` = ' . self::STATUS_TO_SEND . ',
-                    `created_at` = NOW(),
-                    `updated_at` = NOW() 
-                ');
+                    $currentDateTime = Queries::now();
+
                     foreach ($amocrmUsersAr as $amocrmUserId => $chatAr) {
-                        $sth->execute([
-                            ':amocrm_user_id' => $amocrmUserId,
-                            ':chat_id' => $chatAr ['chat_id'],
-                            ':phones' => $chatAr ['phone'],
-                            ':type' => self::REMIND_NO_ORDER,
+                        Queries::insert('cron_message', [
+                            'amocrm_user_id' => $amocrmUserId,
+                            'amocrm_lead_id' => NULL,
+                            'amocrm_status_id' => NULL,
+                            'chat_id' => $chatAr ['chat_id'],
+                            'phones' => $chatAr ['phone'],
+                            'type' => self::REMIND_NO_ORDER,
+                            'status' => self::STATUS_TO_SEND,
+                            'created_at' => $currentDateTime,
+                            'updated_at' => $currentDateTime,
                         ]);
                     }
                 }
@@ -105,27 +99,14 @@ class RemindOrderCronCommand extends AdminCommand {
             $endSearch = new \DateTime(date('Y-m-d 23:59:59'), $dateTimeZone);
             $endSearch->modify($remindAgainDays);
 
-            $pdoStatement = DB::getPdo()->query('
-                SELECT `id` FROM  `cron_message`
-                WHERE `type` = "' . self::REMIND_NO_ORDER . '"
-                  AND `amocrm_status_id` = NULL' .
-                ' AND `status` IN (' . self::STATUS_SENT . ',' . self::STATUS_REMINDED . ')' .
-                ' AND `created_at` >= "' . $startSearch->format('Y-m-d H:i:s') . '"' .
-                ' AND `created_at` <= "' . $endSearch->format('Y-m-d H:i:s') . '"'
-                , PDO::FETCH_ASSOC);
-
-            $messagesAr = [];
-            foreach ($pdoStatement as $row) {
-                $messagesAr [] = $row ['id'];
-            }
+            $messagesAr = Queries::getCronMessageIds($startSearch, $endSearch, self::REMIND_NO_ORDER, [self::STATUS_SENT, self::STATUS_REMINDED]);
             if (!empty($messagesAr)) {
-                $sth = DB::getPdo()->prepare('
-                    UPDATE `cron_message` SET 
-                        `status` = ' . self::STATUS_REMIND . ',
-                        `updated_at` = NOW()
-                    WHERE `id` IN (' . implode(',', $messagesAr) . ')
-                ');
-                $sth->execute($sth);
+                Queries::update('cron_message', [
+                    'status' => self::STATUS_REMIND,
+                    'updated_at' => Queries::now(),
+                ], [
+                    'id' => $messagesAr,
+                ]);
             }
         } catch (AmoWrapException $e) {
             TelegramLog::error($e->getMessage());

@@ -10,6 +10,7 @@ use Longman\TelegramBot\Entities\Keyboard;
 use Models\AdminCommand;
 use Longman\TelegramBot\DB;
 use Longman\TelegramBot\Request;
+use Models\Queries;
 use PDO;
 use PDOStatement;
 
@@ -74,15 +75,11 @@ class SendCronCommand extends AdminCommand {
 
             switch ($message ['type']) {
                 case self::REMIND_NO_ORDER:
-                    if ($message ['status'] == self::STATUS_TO_SEND) {
-                        $data ['text'] = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'remind.php';
-                    } elseif ($message ['status'] == self::STATUS_REMIND) {
-                        $data ['text'] = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'remind_again.php';
-                    }
-                    $data ['text'] .= PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_1') . PHP_EOL . getenv('AMOCRM_MANAGER_PHONE_2');
+                    $result = $this->getTelegram()->executeCommand('remindorder');
 
-                    Request::sendMessage($data);
-                    $sentMessages [] = $id;
+                    if (!empty($result)) {
+                        $sentMessages [] = $id;
+                    }
                     break;
                 case self::BILL_SENT:
                     $text = '';
@@ -139,21 +136,21 @@ class SendCronCommand extends AdminCommand {
         }
 
         if (!empty($sentMessages)) {
-            $sth = DB::getPdo()->prepare('
-                UPDATE `cron_message` SET 
-                    `status` = ' . self::STATUS_SENT . ',
-                    `updated_at` = NOW()
-                WHERE `status` = ' . self::STATUS_TO_SEND . ' AND `id` IN (' . implode(',', $sentMessages). ')
-            ');
-            $sth->execute($sth);
+            Queries::update('cron_message', [
+                'status' => self::STATUS_SENT,
+                'updated_at' => Queries::now(),
+            ], [
+                'id' => $sentMessages,
+                'status' => self::STATUS_TO_SEND,
+            ]);
 
-            $sth = DB::getPdo()->prepare('
-                UPDATE `cron_message` SET 
-                    `status` = ' . self::STATUS_REMINDED . ',
-                    `updated_at` = NOW()
-                WHERE `status` = ' . self::STATUS_REMIND . ' AND `id` IN (' . implode(',', $sentMessages). ')
-            ');
-            $sth->execute($sth);
+            Queries::update('cron_message', [
+                'status' => self::STATUS_REMINDED,
+                'updated_at' => Queries::now(),
+            ], [
+                'id' => $sentMessages,
+                'status' => self::STATUS_REMIND,
+            ]);
         }
 
     }

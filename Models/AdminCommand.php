@@ -74,6 +74,13 @@ abstract class AdminCommand extends AdminCommandBase {
     const STATUS_REMINDED = 3;
 
     const MESSAGE_GET_CALL = 'Обратный звонок';
+    const MENU_REQUIRE_CALL = 'Заказать обратный звонок';
+    const ERROR_PHONE_NOT_FOUND =
+        'Ваш номер не найден.' . PHP_EOL .
+        'Введите номер, с которого Вы делали заказ.' . PHP_EOL .
+        'Для уточнения статуса заказов свяжитесь с менеджером по телефонам:'  . PHP_EOL .
+        '%s' . PHP_EOL .
+        '%s';
 
     protected function getState() {
         //Conversation start
