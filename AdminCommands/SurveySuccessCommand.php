@@ -36,11 +36,6 @@ class SurveySuccessCommand extends AdminCommand
     /**
      * @var bool
      */
-    protected $need_mysql = true;
-
-    /**
-     * @var bool
-     */
     protected $private_only = true;
 
     /**

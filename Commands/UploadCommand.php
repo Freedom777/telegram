@@ -29,7 +29,6 @@ class UploadCommand extends UserCommand
     protected $description = 'Upload and save files';
     protected $usage = '/upload';
     protected $version = '0.1.0';
-    protected $need_mysql = true;
     /**#@-*/
 
     /**

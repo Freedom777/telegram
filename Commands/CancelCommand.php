@@ -45,11 +45,6 @@ class CancelCommand extends UserCommand
     protected $version = '0.2.1';
 
     /**
-     * @var bool
-     */
-    protected $need_mysql = true;
-
-    /**
      * Command execute method
      *
      * @return \Longman\TelegramBot\Entities\ServerResponse

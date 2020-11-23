@@ -48,11 +48,6 @@ class SurveyFailCommand extends AdminCommand
     /**
      * @var bool
      */
-    protected $need_mysql = true;
-
-    /**
-     * @var bool
-     */
     protected $private_only = true;
 
     /**
@@ -70,48 +65,27 @@ class SurveyFailCommand extends AdminCommand
      */
     public function execute()
     {
-        $msg = $this->getMessage();
-
-        $chat    = $msg->getChat();
-        $user    = $msg->getFrom();
-        $text    = trim($msg->getText(true));
-        $chat_id = $chat->getId();
-        $user_id = $user->getId();
-
-        //Conversation start
-        $this->conversation = new Conversation($user_id, $chat_id, $this->getName());
-
-        $notes = &$this->conversation->notes;
-        !is_array($notes) && $notes = [];
-
-        //cache data from the tracking session if any
-        $state = 0;
-        if (isset($notes['state'])) {
-            $state = $notes['state'];
-        }
+        $data = $this->prepareInput();
+        $state = $this->getConversationState();
 
         $result = Request::emptyResponse();
 
         switch ($state) {
             case 0:
-                // $result = Request::emptyResponse();
-                $question = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveyfail.php';
-
-                if ($text === '') {
+                if ($this->text === '') {
                     $this->conversation->update();
+                    $data ['text'] = require TEMPLATE_PATH . DIRECTORY_SEPARATOR . 'surveyfail.php';
 
-                    $data ['text'] = $question;
                     Request::sendMessage($data);
                 }
 
-                $notes ['surveyfail'] = $text;
-                $text = '';
+                $this->notes ['reason'] = $this->text;
+                $this->text = '';
 
             case 1:
-                if ($text === '') {
-                    $notes ['state'] = 1;
+                if (isset($this->notes ['reason']) && strlen($this->notes ['reason']) > 0) {
+                    $this->notes ['state'] = 1;
                     $this->conversation->update();
-                    $this->conversation->stop();
 
                     $data = [
                         'text' => 'Спасибо за обратную связь!',
