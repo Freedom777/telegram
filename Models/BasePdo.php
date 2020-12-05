@@ -132,7 +132,7 @@ class BasePdo {
     protected static function processWhere(&$bindings, $whereOptions = []) {
         $sql = '';
         $whereOptions = (array) $whereOptions;
-        TelegramLog::error(var_export($whereOptions, true));
+
         if (!empty($whereOptions)) {
             $whereCond = [];
             $idx = 0;
@@ -156,6 +156,8 @@ class BasePdo {
                         $val
                     );
                     $valueBindings = array_keys($bindingsWhere);
+                    TelegramLog::error(var_export($bindingsWhere, true));
+                    TelegramLog::error(var_export($valueBindings, true));
                     array_walk($valueBindings, function (&$item) {
                         return ':' . $item;
                     });
@@ -211,7 +213,6 @@ class BasePdo {
         $sql = 'SELECT ' . $selectFields . ' FROM `' . $table . '`' . PHP_EOL;
 
         // WHERE ...
-        TelegramLog::error(var_export($options ['where'], true));
         self::processWhere($bindings, $options ['where']);
 
         // GROUP BY ...
