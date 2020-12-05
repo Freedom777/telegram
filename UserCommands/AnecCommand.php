@@ -29,11 +29,6 @@ class AnecCommand extends UserCommand
     protected $usage = '/anec';
 
     /**
-     * @var string
-     */
-    protected $version = '1.0';
-
-    /**
      * @var bool
      */
     protected $private_only = false;

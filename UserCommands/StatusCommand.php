@@ -41,11 +41,6 @@ class StatusCommand extends UserCommand
     protected $usage = '/status';
 
     /**
-     * @var string
-     */
-    protected $version = '1.0.0';
-
-    /**
      * @var bool
      */
     protected $private_only = true;

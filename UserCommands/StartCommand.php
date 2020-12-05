@@ -42,11 +42,6 @@ class StartCommand extends UserCommand
     protected $usage = '/start';
 
     /**
-     * @var string
-     */
-    protected $version = '1.1.0';
-
-    /**
      * @var bool
      */
     protected $private_only = true;

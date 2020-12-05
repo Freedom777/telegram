@@ -42,11 +42,6 @@ class DateCommand extends UserCommand
     protected $usage = '/date <location>';
 
     /**
-     * @var string
-     */
-    protected $version = '1.4.1';
-
-    /**
      * Guzzle Client object
      *
      * @var \GuzzleHttp\Client

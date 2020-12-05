@@ -19,6 +19,11 @@ abstract class UserCommand extends UserCommandBase {
 
     const MENU_REQUIRE_CALL = 'Заказать обратный звонок';
 
+    /**
+     * @var bool
+     */
+    protected $need_mysql = true;
+
     protected function getAmocrmUserIdByPhone($phone) {
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare('

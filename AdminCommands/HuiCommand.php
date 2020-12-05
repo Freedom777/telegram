@@ -2,15 +2,15 @@
 
 namespace Longman\TelegramBot\Commands\SystemCommands;
 
-use Longman\TelegramBot\Commands\SystemCommand;
 use Longman\TelegramBot\Request;
+use Models\AdminCommand;
 
 /**
  * Currency command
  *
  * Get currencies
  */
-class HuiCommand extends SystemCommand
+class HuiCommand extends AdminCommand
 {
     /**
      * @var string
@@ -26,11 +26,6 @@ class HuiCommand extends SystemCommand
      * @var string
      */
     protected $usage = '/hui';
-
-    /**
-     * @var string
-     */
-    protected $version = '1.0';
 
     /**
      * @var bool

@@ -43,11 +43,6 @@ trait CommandTrait {
     protected $text;
 
     /**
-     * @var bool
-     */
-    protected $need_mysql = true;
-
-    /**
      * Conversation Object
      *
      * @var \Longman\TelegramBot\Conversation

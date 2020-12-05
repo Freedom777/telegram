@@ -29,11 +29,6 @@ class CoronaCommand extends UserCommand
     protected $usage = '/corona';
 
     /**
-     * @var string
-     */
-    protected $version = '1.0';
-
-    /**
      * @var bool
      */
     protected $private_only = false;

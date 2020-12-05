@@ -27,11 +27,6 @@ class CallRequireCommand extends UserCommand
     protected $usage = '/callrequire';
 
     /**
-     * @var string
-     */
-    protected $version = '1.0.0';
-
-    /**
      * @var bool
      */
     protected $private_only = true;
