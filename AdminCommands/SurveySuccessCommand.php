@@ -102,7 +102,7 @@ class SurveySuccessCommand extends AdminCommand
                                 'amocrm_user_type' => [self::$AMOCRRM_USER_TYPE_ADMIN, self::$AMOCRRM_USER_TYPE_MANAGER]
                             ]
                         ];
-                        TelegramLog::error(var_export($receiversData));
+                        TelegramLog::error(var_export($receiversData, true));
                         $receivers = Logic::getAmocrmUsers($receiversData);
 
                         $data = [
