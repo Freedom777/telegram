@@ -15,7 +15,7 @@ class Logic {
             'limit' => FALSE,
         ];
         $options = array_merge($default, $options);
-        TelegramLog::debug(var_export($options, true));
+        TelegramLog::error(var_export($options, true));
         /** @var \PDOStatement $pdoStatement */
         $result = Queries::select('amocrm_user', [
             'fields' => $options ['fields'],
