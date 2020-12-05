@@ -99,10 +99,11 @@ class SurveySuccessCommand extends AdminCommand
                             'fields' => 'chat_id',
                             'filters' => ['amocrm_user_type' => [self::$AMOCRRM_USER_TYPE_ADMIN, self::$AMOCRRM_USER_TYPE_MANAGER]]
                         ]);
+                        $msg = var_export($receivers, true);
 
                         $data = [
                             'text' => 'Пользователь с номером телефона ' . $phone .
-                                ' и завершённым заказом оценил работу магазина ' . $this->notes ['rate'] . ' / 5',
+                                ' и завершённым заказом оценил работу магазина ' . $this->notes ['rate'] . ' / 5' . $msg,
                         ];
                         foreach ($receivers as $receiver) {
                             $chatData = array_merge($data, ['chat_id' => $receiver ['chat_id']]);
