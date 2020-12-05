@@ -4,6 +4,7 @@ namespace Longman\TelegramBot\Commands\AdminCommands;
 
 use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Request;
+use Longman\TelegramBot\TelegramLog;
 use Models\AdminCommand;
 use Models\Logic;
 
@@ -95,15 +96,18 @@ class SurveySuccessCommand extends AdminCommand
                     if (!empty($sender) && !empty($sender[0]) && !empty($sender[0]['phone'])) {
                         $phone = $sender[0]['phone'];
 
-                        $receivers = Logic::getAmocrmUsers([
+                        $receiversData = [
                             'fields' => 'chat_id',
-                            'filters' => ['amocrm_user_type' => [self::$AMOCRRM_USER_TYPE_ADMIN, self::$AMOCRRM_USER_TYPE_MANAGER]]
-                        ]);
-                        $msg = var_export($receivers, true);
+                            'filters' => [
+                                'amocrm_user_type' => [self::$AMOCRRM_USER_TYPE_ADMIN, self::$AMOCRRM_USER_TYPE_MANAGER]
+                            ]
+                        ];
+                        TelegramLog::error(var_export($receiversData));
+                        $receivers = Logic::getAmocrmUsers($receiversData);
 
                         $data = [
                             'text' => 'Пользователь с номером телефона ' . $phone .
-                                ' и завершённым заказом оценил работу магазина ' . $this->notes ['rate'] . ' / 5' . $msg,
+                                ' и завершённым заказом оценил работу магазина ' . $this->notes ['rate'] . ' / 5',
                         ];
                         foreach ($receivers as $receiver) {
                             $chatData = array_merge($data, ['chat_id' => $receiver ['chat_id']]);
