@@ -107,7 +107,7 @@ class SurveySuccessCommand extends AdminCommand
                                 ' и завершённым заказом оценил работу магазина ' . $this->notes ['rate'] . ' / 5',
                         ];
                         foreach ($receivers as $receiver) {
-                            $chatData = array_merge($data, $receiver ['chat_id']);
+                            $chatData = array_merge($data, ['chat_id' => $receiver ['chat_id']]);
                             Request::sendMessage($chatData);
                         }
                     }
