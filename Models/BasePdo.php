@@ -3,6 +3,7 @@
 namespace Models;
 
 use Longman\TelegramBot\DB;
+use Longman\TelegramBot\TelegramLog;
 
 class BasePdo {
     public static function now() {
@@ -241,6 +242,7 @@ class BasePdo {
         if (!empty($options ['limit'])) {
             $sql .= 'LIMIT ' . $options ['limit'] . PHP_EOL;
         }
+        TelegramLog::error($sql);
 
         // Result prepare
         /** @var \PDOStatement $pdoStatement */
