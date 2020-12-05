@@ -158,7 +158,7 @@ class BasePdo {
                         return ':' . $item;
                     });
                     $bindings = array_merge($bindings, $bindingsWhere);
-                    $whereCond [] = '`' . $fieldName . '`' . ' IN (' . implode(', ', $valueBindings) . ')';
+                    $whereCond [] = '`' . $fieldName . '`' . ' IN (' . implode('\', \'', $valueBindings) . ')';
                 } else {
                     if (null === $val) {
                         $whereCond [] = '`' . $fieldName . '`' . ' IS NULL';
