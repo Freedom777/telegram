@@ -2,6 +2,8 @@
 
 namespace Models;
 
+use Longman\TelegramBot\TelegramLog;
+
 class Logic {
 
     public static function getAmocrmUsers($options) {
@@ -13,6 +15,7 @@ class Logic {
             'limit' => FALSE,
         ];
         $options = array_merge($default, $options);
+        TelegramLog::debug($options);
         /** @var \PDOStatement $pdoStatement */
         $result = Queries::select('amocrm_user', [
             'fields' => $options ['fields'],
