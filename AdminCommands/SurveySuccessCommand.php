@@ -82,8 +82,6 @@ class SurveySuccessCommand extends AdminCommand
                         'reply_markup' => Keyboard::remove(['selective' => true]),
                         'text' => 'Спасибо за обратную связь, Вы выбрали ' . $this->notes ['rate'],
                     ]);
-
-                    $this->conversation->stop();
                     $result = Request::sendMessage($data);
 
                     $sender = Logic::getAmocrmUsers([
@@ -111,6 +109,7 @@ class SurveySuccessCommand extends AdminCommand
                             Request::sendMessage($chatData);
                         }
                     }
+                    $this->conversation->stop();
                 }
             break;
         }

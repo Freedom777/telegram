@@ -10,6 +10,7 @@
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
+use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Request;
 use Models\AdminCommand;
 use Models\Logic;
@@ -72,6 +73,7 @@ class SurveyFailCommand extends AdminCommand
                     $this->conversation->update();
 
                     $data = [
+                        'reply_markup' => Keyboard::remove(['selective' => true]),
                         'text' => 'Спасибо за обратную связь, Вы выбрали ' . $this->notes ['rate'],
                     ];
                     $result = Request::sendMessage($data);
@@ -101,6 +103,7 @@ class SurveyFailCommand extends AdminCommand
                             Request::sendMessage($chatData);
                         }
                     }
+                    $this->conversation->stop();
                 }
                 break;
         }
