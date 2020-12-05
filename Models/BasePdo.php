@@ -209,6 +209,7 @@ class BasePdo {
         $sql = 'SELECT ' . $selectFields . ' FROM `' . $table . '`' . PHP_EOL;
 
         // WHERE ...
+        TelegramLog::error(var_export($options ['where'], true));
         self::processWhere($bindings, $options ['where']);
 
         // GROUP BY ...
