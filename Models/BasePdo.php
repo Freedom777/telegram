@@ -131,7 +131,7 @@ class BasePdo {
 
     protected static function processWhere(&$bindings, $whereOptions = []) {
         $sql = '';
-
+        TelegramLog::error(var_export($whereOptions));
         if (!empty($whereOptions)) {
             $whereCond = [];
             $idx = 0;
