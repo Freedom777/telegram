@@ -131,6 +131,7 @@ class BasePdo {
 
     protected static function processWhere(&$bindings, $whereOptions = []) {
         $sql = '';
+        $whereOptions = (array) $whereOptions;
         if (!empty($whereOptions)) {
             $whereCond = [];
             $idx = 0;
