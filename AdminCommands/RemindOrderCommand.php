@@ -35,21 +35,9 @@ class RemindOrderCommand extends AdminCommand
     protected $usage = '/remindorder';
 
     /**
-     * @var string
-     */
-    protected $version = '0.3.0';
-
-    /**
      * @var bool
      */
     protected $private_only = true;
-
-    /**
-     * Conversation Object
-     *
-     * @var \Longman\TelegramBot\Conversation
-     */
-    protected $conversation;
 
     /**
      * Command execute method

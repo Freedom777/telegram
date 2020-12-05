@@ -3,16 +3,10 @@
 namespace Longman\TelegramBot\Commands\AdminCommands;
 
 use Longman\TelegramBot\Commands\UserCommands\SurveySuccessCommand;
-use Longman\TelegramBot\Conversation;
-use Longman\TelegramBot\Entities\InlineKeyboard;
-use Longman\TelegramBot\Entities\InlineKeyboardButton;
-use Longman\TelegramBot\Entities\Keyboard;
 use Models\AdminCommand;
-use Longman\TelegramBot\DB;
 use Longman\TelegramBot\Request;
-use Models\Queries;
-use PDO;
-use PDOStatement;
+use Models\BasePdo;
+use Models\Logic;
 
 class SendCronCommand extends AdminCommand {
     /**
@@ -32,28 +26,25 @@ class SendCronCommand extends AdminCommand {
 
     public function execute()
     {
-        /** @var PDOStatement $pdoStatement */
-        $pdoStatement = DB::getPdo()->query('
-            SELECT `amocrm_user_id`, `chat_id`, `phone`
-            FROM `amocrm_user`
-            GROUP BY `amocrm_user_id`
-            ORDER BY `id` DESC'
-            , PDO::FETCH_ASSOC);
+        /** @var array $users */
+        $users = Logic::getAmocrmUsers([
+            'fields' => ['amocrm_user_id', 'chat_id', 'phone'],
+            'group' => 'amocrm_user_id'
+        ]);
+
         $amocrmUsersAr = [];
-        foreach ($pdoStatement as $row) {
+        foreach ($users as $row) {
             $amocrmUsersAr [(int) $row['amocrm_user_id']] = [
                 'chat_id' => (int) $row ['chat_id'],
                 'phone' => $row ['phone']
             ];
         }
 
-        $pdoStatement = DB::getPdo()->query('
-            SELECT *
-            FROM `cron_message`
-            WHERE `status` IN (' . self::$STATUS_TO_SEND . ',' . self::$STATUS_REMIND . ')'
-            , PDO::FETCH_ASSOC);
+        $cronMessages = Logic::getCronMessages([
+            'filters' => ['status' => [self::$STATUS_TO_SEND, self::$STATUS_REMIND]]
+        ]);
         $messages = [];
-        foreach ($pdoStatement as $row) {
+        foreach ($cronMessages as $row) {
             if (in_array((int) $row ['amocrm_user_id'], $amocrmUsersAr)) {
                 $messages [(int) $row['id']] = [
                     'amocrm_user_id' => (int) $row ['amocrm_user_id'],
@@ -136,17 +127,17 @@ class SendCronCommand extends AdminCommand {
         }
 
         if (!empty($sentMessages)) {
-            Queries::update('cron_message', [
+            Logic::updateCronMessage([
                 'status' => self::$STATUS_SENT,
-                'updated_at' => Queries::now(),
+                'updated_at' => BasePdo::now(),
             ], [
                 'id' => $sentMessages,
                 'status' => self::$STATUS_TO_SEND,
             ]);
 
-            Queries::update('cron_message', [
+            Logic::updateCronMessage([
                 'status' => self::$STATUS_REMINDED,
-                'updated_at' => Queries::now(),
+                'updated_at' => BasePdo::now(),
             ], [
                 'id' => $sentMessages,
                 'status' => self::$STATUS_REMIND,

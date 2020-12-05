@@ -5,6 +5,12 @@ namespace Models;
 use Longman\TelegramBot\DB;
 
 class BasePdo {
+    public static function now() {
+        $dateTimeZone = new \DateTimeZone(getenv('TIMEZONE'));
+
+        return (new \DateTime('now', $dateTimeZone))->format('Y-m-d H:i:s');
+    }
+
     public static function getSql($string,$data) {
         $indexed = ($data == array_values($data));
         foreach($data as $k=>$v) {

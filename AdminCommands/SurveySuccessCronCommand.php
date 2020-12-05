@@ -6,10 +6,7 @@ use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use DrillCoder\AmoCRM_Wrap\AmoWrapException;
 use Longman\TelegramBot\TelegramLog;
 use Models\AdminCommand;
-use Longman\TelegramBot\DB;
-use Longman\TelegramBot\Request;
-use PDO;
-use PDOStatement;
+use Models\Logic;
 
 class SurveySuccessCronCommand extends AdminCommand {
     /**
@@ -69,40 +66,27 @@ class SurveySuccessCronCommand extends AdminCommand {
             }
 
             if (!empty($leadsAr)) {
-                /** @var PDOStatement $pdoStatement */
-                $pdoStatement = DB::getPdo()->query('
-                SELECT `amocrm_user_id`, `amocrm_lead_id`
-                FROM `cron_message`
-                WHERE `type` = "' . self::SURVEY_FEEDBACK . '" AND `amocrm_status_id` = ' . $statusId .
-                    ' AND `created_at` >= "' . $startSearch->format('Y-m-d H:i:s') . '"' .
-                    ' AND `created_at` <= "' . $endSearch->format('Y-m-d H:i:s') . '"'
-                    , PDO::FETCH_ASSOC);
-                $existUsersAr = [];
-                foreach ($pdoStatement as $row) {
-                    $existUsersAr [$row ['amocrm_lead_id']] = $row['amocrm_user_id'];
-                }
+                $cronMessages = Logic::getCronMessages(['amocrm_user_id', 'amocrm_lead_id'], [
+                    'type' => self::SURVEY_FEEDBACK,
+                    'amocrm_status_id' => $statusId,
+                    'fromDateTime' => $startSearch,
+                    'toDateTime' => $endSearch,
+                ]);
 
-                $sth = DB::getPdo()->prepare('
-                    INSERT INTO `cron_message` SET 
-                    `amocrm_user_id` = :amocrm_user_id,
-                    `amocrm_lead_id` = :amocrm_lead_id,
-                    `amocrm_status_id` = :amocrm_status_id,
-                    `chat_id` = NULL,
-                    `phones` = :phones,
-                    `type` = :type,
-                    `status` = ' . self::$STATUS_TO_SEND . ',
-                    `created_at` = :created_at,
-                    `updated_at` = :created_at 
-                ');
+                $existUsersAr = array_column($cronMessages, 'amocrm_user_id', 'amocrm_lead_id');
+
                 foreach ($leadsAr as $userId => $leadAr) {
                     if (!in_array($leadAr ['user_id'], $existUsersAr)){
-                        $sth->execute([
-                            ':amocrm_user_id' => $leadAr ['user_id'],
-                            ':amocrm_lead_id' => $leadAr ['lead_id'],
-                            ':amocrm_status_id' => $leadAr ['status_id'],
-                            ':phones' => $this->processPhones($leadAr ['phones']),
-                            ':type' => self::SURVEY_FEEDBACK,
-                            ':created_at' => $leadAr ['updated_at']->format('Y-m-d H:i:s'),
+                        Logic::insertCronMessage([
+                            'amocrm_user_id' => $leadAr ['user_id'],
+                            'amocrm_lead_id' => $leadAr ['lead_id'],
+                            'amocrm_status_id' => $leadAr ['status_id'],
+                            'chat_id' => NULL,
+                            'phones' => $this->processPhones($leadAr ['phones']),
+                            'type' => self::SURVEY_FEEDBACK,
+                            'status' => self::$STATUS_TO_SEND,
+                            'created_at' => $leadAr ['updated_at']->format('Y-m-d H:i:s'),
+                            'updated_at' => $leadAr ['updated_at']->format('Y-m-d H:i:s'),
                         ]);
                     }
                 }

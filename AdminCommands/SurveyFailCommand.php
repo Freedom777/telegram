@@ -10,13 +10,9 @@
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
-use Longman\TelegramBot\Commands\UserCommand;
-use Longman\TelegramBot\Conversation;
-use Longman\TelegramBot\Entities\Keyboard;
-use Longman\TelegramBot\Entities\KeyboardButton;
-use Longman\TelegramBot\Entities\PhotoSize;
 use Longman\TelegramBot\Request;
 use Models\AdminCommand;
+use Models\Logic;
 
 /**
  * Admin "/surveyfail" command
@@ -41,21 +37,9 @@ class SurveyFailCommand extends AdminCommand
     protected $usage = '/surveyfail';
 
     /**
-     * @var string
-     */
-    protected $version = '0.3.0';
-
-    /**
      * @var bool
      */
     protected $private_only = true;
-
-    /**
-     * Conversation Object
-     *
-     * @var \Longman\TelegramBot\Conversation
-     */
-    protected $conversation;
 
     /**
      * Command execute method
@@ -88,9 +72,35 @@ class SurveyFailCommand extends AdminCommand
                     $this->conversation->update();
 
                     $data = [
-                        'text' => 'Спасибо за обратную связь!',
+                        'text' => 'Спасибо за обратную связь, Вы выбрали ' . $this->notes ['rate'],
                     ];
                     $result = Request::sendMessage($data);
+
+                    $sender = Logic::getAmocrmUsers([
+                        'fields' => 'phone',
+                        'filter' => [
+                            'chat_id' => $this->chat_id,
+                            'amocrm_user_type' => self::$AMOCRRM_USER_TYPE_USER,
+                        ],
+                        'limit' => 1
+                    ]);
+                    if (!empty($sender) && !empty($sender[0]) && !empty($sender[0]['phone'])) {
+                        $phone = $sender[0]['phone'];
+
+                        $receivers = Logic::getAmocrmUsers([
+                            'fields' => 'chat_id',
+                            'filters' => ['amocrm_user_type' => [self::$AMOCRRM_USER_TYPE_ADMIN, self::$AMOCRRM_USER_TYPE_MANAGER]]
+                        ]);
+
+                        $data = [
+                            'text' => 'Пользователь с номером телефона ' . $phone .
+                                ' и невыполненным заказом оценил работу магазина ' . $this->notes ['rate'] . ' / 5',
+                        ];
+                        foreach ($receivers as $receiver) {
+                            $chatData = array_merge($data, $receiver ['chat_id']);
+                            Request::sendMessage($chatData);
+                        }
+                    }
                 }
                 break;
         }

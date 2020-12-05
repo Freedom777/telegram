@@ -7,6 +7,7 @@ use DrillCoder\AmoCRM_Wrap\AmoWrapException;
 use Longman\TelegramBot\TelegramLog;
 use Models\AdminCommand;
 use Longman\TelegramBot\DB;
+use Models\Logic;
 use Models\Queries;
 use PDO;
 use PDOStatement;
@@ -38,7 +39,7 @@ class RemindOrderCronCommand extends AdminCommand {
         $dateTimeZone = new \DateTimeZone(getenv('TIMEZONE'));
 
         try {
-            $amocrmUsersResult = Queries::select('amocrm_user', [
+            $amocrmUsersResult = Logic::getAmocrmUsers([
                 'fields' => ['amocrm_user_id', 'chat_id', 'phone'],
                 'group' => 'amocrm_user_id',
                 'order' => ['id' => 'DESC'],
@@ -75,7 +76,7 @@ class RemindOrderCronCommand extends AdminCommand {
                     $currentDateTime = Queries::now();
 
                     foreach ($amocrmUsersAr as $amocrmUserId => $chatAr) {
-                        Queries::insert('cron_message', [
+                        Logic::insertCronMessage([
                             'amocrm_user_id' => $amocrmUserId,
                             'amocrm_lead_id' => NULL,
                             'amocrm_status_id' => NULL,

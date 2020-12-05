@@ -62,6 +62,10 @@ trait CommandTrait {
     public static $STATUS_REMIND = 2;
     public static $STATUS_REMINDED = 3;
 
+    public static $AMOCRRM_USER_TYPE_ADMIN = 'admin';
+    public static $AMOCRRM_USER_TYPE_MANAGER = 'manager';
+    public static $AMOCRRM_USER_TYPE_USER = 'user';
+
     public static $STATUSES = [
         29361424    => 'Неразобранное',
         29361427    => 'Новое обращение',

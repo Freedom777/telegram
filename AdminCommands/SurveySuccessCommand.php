@@ -5,6 +5,7 @@ namespace Longman\TelegramBot\Commands\AdminCommands;
 use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Request;
 use Models\AdminCommand;
+use Models\Logic;
 
 /**
  * Admin "/surveysuccess" command
@@ -27,11 +28,6 @@ class SurveySuccessCommand extends AdminCommand
      * @var string
      */
     protected $usage = '/surveysuccess';
-
-    /**
-     * @var string
-     */
-    protected $version = '0.3.0';
 
     /**
      * @var bool
@@ -89,6 +85,32 @@ class SurveySuccessCommand extends AdminCommand
 
                     $this->conversation->stop();
                     $result = Request::sendMessage($data);
+
+                    $sender = Logic::getAmocrmUsers([
+                        'fields' => 'phone',
+                        'filter' => [
+                            'chat_id' => $this->chat_id,
+                            'amocrm_user_type' => self::$AMOCRRM_USER_TYPE_USER,
+                        ],
+                        'limit' => 1
+                    ]);
+                    if (!empty($sender) && !empty($sender[0]) && !empty($sender[0]['phone'])) {
+                        $phone = $sender[0]['phone'];
+
+                        $receivers = Logic::getAmocrmUsers([
+                            'fields' => 'chat_id',
+                            'filters' => ['amocrm_user_type' => [self::$AMOCRRM_USER_TYPE_ADMIN, self::$AMOCRRM_USER_TYPE_MANAGER]]
+                        ]);
+
+                        $data = [
+                            'text' => 'Пользователь с номером телефона ' . $phone .
+                                ' и завершённым заказом оценил работу магазина ' . $this->notes ['rate'] . ' / 5',
+                        ];
+                        foreach ($receivers as $receiver) {
+                            $chatData = array_merge($data, $receiver ['chat_id']);
+                            Request::sendMessage($chatData);
+                        }
+                    }
                 }
             break;
         }
