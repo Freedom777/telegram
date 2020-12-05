@@ -34,22 +34,18 @@ abstract class UserCommand extends UserCommandBase {
             ]
         ]);
 
-        if (!empty($exist) && !empty($exist[0]) && !empty($exist[0]['amocrm_user_id'])) {
-            $currentDateTime = date('Y-m-d H:i:s');
-            $sth = DB::getPdo()->prepare('
-                                        UPDATE `amocrm_user` SET
-                                        `updated_at` = :current_date_time
-                                        WHERE `id` = :id
-                                    ');
-            $sth->execute([
-                ':id' => $exist ['id'],
-                ':current_date_time' => $currentDateTime
+        if (!empty($exist) && !empty($exist[0]) && !empty($exist[0]['id'])) {
+            $currentDateTime = BasePdo::now();
+            $updateSuccess = Logic::updateAmocrmUser([
+                'updated_at' => $currentDateTime
+            ], [
+                'id' => $exist[0]['id'],
             ]);
 
-            return $exist ['amocrm_user_id'];
+            return $updateSuccess;
         }
 
-        return null;
+        return false;
     }
 
     protected function checkInsertUser($phone, $amocrmUserId) {

@@ -106,4 +106,15 @@ class Logic {
     public static function insertCronMessage(array $data) {
         BasePdo::insert('cron_message', $data);
     }
+
+    /**
+     * @param array $data
+     * @param array $where
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public static function updateAmocrmUser(array $data, array $where = []) {
+        return BasePdo::update('amocrm_user', $data, $where);
+    }
 }
