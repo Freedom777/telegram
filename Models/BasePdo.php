@@ -87,7 +87,7 @@ class BasePdo {
      */
     public static function update(string $table, array $data = [], $where = []) {
         $sql = self::prepareInsertUpdateSet('update', $table, $data);
-        self::processWhere($data, $where);
+        $sql .= self::processWhere($data, $where);
 
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare($sql);
@@ -156,8 +156,6 @@ class BasePdo {
                         $val
                     );
                     $valueBindings = array_keys($bindingsWhere);
-                    TelegramLog::error(var_export($bindingsWhere, true));
-                    TelegramLog::error(var_export($valueBindings, true));
                     array_walk($valueBindings, function (&$item) {
                         return ':' . $item;
                     });
@@ -213,7 +211,7 @@ class BasePdo {
         $sql = 'SELECT ' . $selectFields . ' FROM `' . $table . '`' . PHP_EOL;
 
         // WHERE ...
-        self::processWhere($bindings, $options ['where']);
+        $sql .= self::processWhere($bindings, $options ['where']);
 
         // GROUP BY ...
         if (!empty($options ['group'])) {
@@ -245,7 +243,6 @@ class BasePdo {
         if (!empty($options ['limit'])) {
             $sql .= 'LIMIT ' . $options ['limit'] . PHP_EOL;
         }
-        TelegramLog::error($sql);
 
         // Result prepare
         /** @var \PDOStatement $pdoStatement */
