@@ -88,7 +88,7 @@ class SurveySuccessCommand extends AdminCommand
 
                     $sender = Logic::getAmocrmUsers([
                         'fields' => 'phone',
-                        'filter' => [
+                        'filters' => [
                             'chat_id' => $this->chat_id,
                             'amocrm_user_type' => self::$AMOCRRM_USER_TYPE_USER,
                         ],

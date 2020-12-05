@@ -25,21 +25,16 @@ abstract class UserCommand extends UserCommandBase {
     protected $need_mysql = true;
 
     protected function getAmocrmUserIdByPhone($phone) {
-        /** @var \PDOStatement $pdoStatement */
-        $sth = DB::getPdo()->prepare('
-                                        SELECT `id`, `amocrm_user_id`
-                                        FROM `amocrm_user`
-                                        WHERE `chat_id` = :chat_id AND `phone` = :phone
-                                        ORDER BY `id` DESC
-                                        LIMIT 1'
-        );
-        $sth->execute([
-            ':chat_id' => $this->chat_id,
-            ':phone' => $phone,
+        $exist = Logic::getAmocrmUsers([
+            'fields' => ['id', 'amocrm_user_id'],
+            'filters' => [
+                'chat_id' => $this->chat_id,
+                'phone' => $phone,
+                'limit' => 1,
+            ]
         ]);
-        $exist = $sth->fetch(\PDO::FETCH_ASSOC);
 
-        if (!empty($exist) && !empty($exist['amocrm_user_id'])) {
+        if (!empty($exist) && !empty($exist[0]) && !empty($exist[0]['amocrm_user_id'])) {
             $currentDateTime = date('Y-m-d H:i:s');
             $sth = DB::getPdo()->prepare('
                                         UPDATE `amocrm_user` SET
@@ -130,20 +125,6 @@ abstract class UserCommand extends UserCommandBase {
             ':phone' => $phone,
             ':current_date_time' => $currentDateTime
         ]);
-    }
-
-    /**
-     * @param int $chatId
-     *
-     * @return false|string
-     */
-    protected function getUserPhone($chatId) {
-        $amocrmUser = Queries::getAmocrmUserByChatId($chatId, 'phone');
-        if (!empty($amocrmUser) && !empty($amocrmUser ['phone'])) {
-            return $amocrmUser ['phone'];
-        }
-
-        return false;
     }
 
     protected function getContactIdByChatId($chatId) {
