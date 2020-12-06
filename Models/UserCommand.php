@@ -81,7 +81,7 @@ abstract class UserCommand extends UserCommandBase {
             } else {
                 $amocrmUsers = Logic::getAmocrmUsers([
                     'fields' => 'phone',
-                    'filters' => ['chat_id' => $this->user_id, 'amocrm_user_id' => $amocrmUserId],
+                    'filters' => ['chat_id' => $this->user_id/*, 'amocrm_user_id' => $amocrmUserId*/],
                     'limit' => 1
                 ]);
                 if (empty($amocrmUsers) || $phone != $amocrmUsers [0] ['phone']) {
