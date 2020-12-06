@@ -103,8 +103,14 @@ class Logic {
         return BasePdo::update('cron_message', $data, $where);
     }
 
+    /**
+     * @param array $data
+     *
+     * @return bool
+     * @throws \Exception
+     */
     public static function insertCronMessage(array $data) {
-        BasePdo::insert('cron_message', $data);
+        return BasePdo::insert('cron_message', $data);
     }
 
     /**
@@ -116,5 +122,15 @@ class Logic {
      */
     public static function updateAmocrmUser(array $data, array $where = []) {
         return BasePdo::update('amocrm_user', $data, $where);
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public static function insertAmocrmUser(array $data) {
+        return BasePdo::insert('amocrm_user', $data);
     }
 }

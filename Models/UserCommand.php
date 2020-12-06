@@ -34,7 +34,7 @@ abstract class UserCommand extends UserCommandBase {
             ]
         ]);
 
-        if (!empty($exist) && !empty($exist[0]) && !empty($exist[0]['id'])) {
+        if (!empty($exist)) {
             $currentDateTime = BasePdo::now();
             $updateSuccess = Logic::updateAmocrmUser([
                 'updated_at' => $currentDateTime
@@ -51,76 +51,50 @@ abstract class UserCommand extends UserCommandBase {
     protected function checkInsertUser($phone, $amocrmUserId) {
         // Update table
         if ($this->user_id == $this->chat_id) { // Private chat
-            $currentDateTime = date('Y-m-d H:i:s');
+            $currentDateTime = BasePdo::now();
+
             if (null === $amocrmUserId) {
                 // Contact in AMOCRM not found
-                $sth = DB::getPdo()->prepare('
-                                    SELECT `id`
-                                    FROM `amocrm_user`
-                                    WHERE `phone` = :phone
-                                    ORDER BY `id` DESC
-                                    LIMIT 1'
-                );
-
-                $sth->execute([
-                    ':phone' => $phone,
+                $amocrmUsers = Logic::getAmocrmUsers([
+                    'fields' => 'id',
+                    'filters' => ['phone' => $phone],
+                    'limit' => 1
                 ]);
-                $exist = $sth->fetch(\PDO::FETCH_ASSOC);
-                if (empty($exist)) {
-                    $this->insertUser(null, $phone);
+
+                if (empty($amocrmUsers)) {
+                    Logic::insertAmocrmUser([
+                        'chat_id' => $this->user_id,
+                        'amocrm_user_id' => null,
+                        'phone' => $phone,
+                        'created_at' => $currentDateTime,
+                        'updated_at' => $currentDateTime
+                    ]);
                 } else {
-                    $sth = DB::getPdo()->prepare('
-                                        UPDATE `amocrm_user` SET
-                                        `chat_id` = :chat_id,
-                                        `amocrm_user_id` = :amocrm_user_id,
-                                        `updated_at` = :current_date_time
-                                        WHERE `id` = :id
-                                    ');
-                    $sth->execute([
-                        ':id' => $exist ['id'],
-                        ':chat_id' => $this->chat_id,
-                        ':amocrm_user_id' => null,
-                        ':current_date_time' => $currentDateTime
+                    Logic::updateAmocrmUser([
+                        'chat_id' => $this->user_id,
+                        'amocrm_user_id' => null,
+                        'updated_at' => $currentDateTime,
+                    ], [
+                        'id' => $amocrmUsers [0] ['id'],
                     ]);
                 }
             } else {
-                /** @var \PDOStatement $pdoStatement */
-                $sth = DB::getPdo()->prepare('
-                                        SELECT `phone`
-                                        FROM `amocrm_user`
-                                        WHERE `chat_id` = :chat_id AND `amocrm_user_id` = :amocrm_user_id
-                                        ORDER BY `id` DESC
-                                        LIMIT 1'
-                );
-                $sth->execute([
-                    ':chat_id' => $this->chat_id,
-                    ':amocrm_user_id' => $amocrmUserId,
+                $amocrmUsers = Logic::getAmocrmUsers([
+                    'fields' => 'phone',
+                    'filters' => ['chat_id' => $this->user_id, 'amocrm_user_id' => $amocrmUserId],
+                    'limit' => 1
                 ]);
-                $exist = $sth->fetch(\PDO::FETCH_ASSOC);
-                if (empty($exist) || $phone != $exist ['phone']) {
-                    $this->insertUser($amocrmUserId, $phone);
+                if (empty($amocrmUsers) || $phone != $amocrmUsers [0] ['phone']) {
+                    Logic::insertAmocrmUser([
+                        'chat_id' => $this->user_id,
+                        'amocrm_user_id' => $amocrmUserId,
+                        'phone' => $phone,
+                        'created_at' => $currentDateTime,
+                        'updated_at' => $currentDateTime
+                    ]);
                 }
             }
         }
-    }
-
-    protected function insertUser($amocrmUserId, $phone) {
-        $currentDateTime = date('Y-m-d H:i:s');
-
-        $sth = DB::getPdo()->prepare('
-                                            INSERT INTO `amocrm_user` SET
-                                            `chat_id` = :chat_id, 
-                                            `amocrm_user_id` = :amocrm_user_id,
-                                            `phone` = :phone,
-                                            `created_at` = :current_date_time,
-                                            `updated_at` = :current_date_time
-                                        ');
-        $sth->execute([
-            ':chat_id' => $this->chat_id,
-            ':amocrm_user_id' => $amocrmUserId,
-            ':phone' => $phone,
-            ':current_date_time' => $currentDateTime
-        ]);
     }
 
     protected function getContactIdByChatId($chatId) {
