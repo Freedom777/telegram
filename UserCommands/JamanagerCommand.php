@@ -50,7 +50,7 @@ class JamanagerCommand extends UserCommand
             'chat_id' => $this->user_id,
             'limit' => 1
         ]);
-        TelegramLog::error(var_export($amocrmUsers), true);
+        TelegramLog::error(var_export($amocrmUsers, true));
         if (!empty($amocrmUsers)) {
             $id = $amocrmUsers [0] ['id'];
 

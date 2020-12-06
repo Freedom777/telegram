@@ -3,6 +3,7 @@
 namespace Models;
 
 use Longman\TelegramBot\DB;
+use Longman\TelegramBot\TelegramLog;
 
 class BasePdo {
     public static function now() {
@@ -93,7 +94,8 @@ class BasePdo {
     public static function update(string $table, array $data = [], $where = []) : bool {
         $sql = self::prepareInsertUpdateSet('update', $table, $data);
         $sql .= self::processWhere($data, $where);
-
+        TelegramLog::error($sql);
+        TelegramLog::error(var_export($data, true));
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare($sql);
         self::bindArrayValue($sth, $data);
