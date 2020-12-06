@@ -21,6 +21,11 @@ try {
         'fields' => 'chat_id',
         'where' => ['amocrm_user_type' => 'admin']
     ]), 'chat_id');
+
+    Request::sendMessage([
+        'chat_id' => (int)getenv('ADMIN_TELEGRAM_ID'),
+        'text'    => 'aaa' . var_export($admins, true),
+    ]);
     $dbh = null;
     array_walk($admins, function (&$item) {
         $item = (int) $item;
