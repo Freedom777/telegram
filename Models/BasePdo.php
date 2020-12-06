@@ -115,6 +115,7 @@ class BasePdo {
                 if ($typeArray) {
                     $sth->bindValue(':' . $key, $value, $typeArray[$key]);
                 } else {
+                    TelegramLog::error(gettype($value));
                     switch (gettype($value)) {
                         case 'int':
                             $param = \PDO::PARAM_INT;
