@@ -174,6 +174,8 @@ class BasePdo {
             if (!empty($whereCond)) {
                 $sql = 'WHERE ' . implode(PHP_EOL . 'AND ', $whereCond) . PHP_EOL;
             }
+            TelegramLog::error($sql);
+            TelegramLog::error(var_export($bindings, true));
         }
 
         return $sql;
