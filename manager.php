@@ -17,15 +17,14 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . 'settings.php';
 try {
     $dbh = new PDO('mysql:host=' . $botSettings['mysql']['host'] . ';dbname=' . $botSettings['mysql']['database'],
         $botSettings['mysql']['user'], $botSettings['mysql']['password']);
+    Request::sendMessage([
+        'chat_id' => (int)getenv('ADMIN_TELEGRAM_ID'),
+        'text'    => 'aaa' . var_export($dbh, true),
+    ]);
     $admins = array_column(BasePdo::select('amocrm_user', [
         'fields' => 'chat_id',
         'where' => ['amocrm_user_type' => 'admin']
     ]), 'chat_id');
-
-    Request::sendMessage([
-        'chat_id' => (int)getenv('ADMIN_TELEGRAM_ID'),
-        'text'    => 'aaa' . var_export($admins, true),
-    ]);
     $dbh = null;
     array_walk($admins, function (&$item) {
         $item = (int) $item;
