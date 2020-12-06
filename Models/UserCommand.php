@@ -25,8 +25,11 @@ abstract class UserCommand extends UserCommandBase {
     protected $need_mysql = true;
 
     protected function getAmocrmUserIdByPhone($phone) {
+        $result = null;
+        $currentDateTime = BasePdo::now();
+
         $exist = Logic::getAmocrmUsers([
-            'fields' => ['id', 'amocrm_user_id'],
+            'fields' => ['id', 'amocrm_user_id', 'amocrm_user_type'],
             'filters' => [
                 'chat_id' => $this->chat_id,
                 'phone' => $phone
@@ -35,17 +38,18 @@ abstract class UserCommand extends UserCommandBase {
         ]);
 
         if (!empty($exist)) {
-            $currentDateTime = BasePdo::now();
-            $updateSuccess = Logic::updateAmocrmUser([
-                'updated_at' => $currentDateTime
-            ], [
-                'id' => $exist[0]['id'],
-            ]);
-
-            return $updateSuccess;
+            if (!empty($exist ['amocrm_user_id'])) {
+                $result = $exist ['amocrm_user_id'];
+            }/* elseif (in_array($exist ['amocrm_user_type'], [self::$AMOCRRM_USER_TYPE_ADMIN, self::$AMOCRRM_USER_TYPE_MANAGER])) {
+                $updateSuccess = Logic::updateAmocrmUser([
+                    'updated_at' => $currentDateTime
+                ], [
+                    'id' => $exist[0]['id'],
+                ]);
+            }*/
         }
 
-        return false;
+        return $result;
     }
 
     protected function checkInsertUser($phone, $amocrmUserId) {
