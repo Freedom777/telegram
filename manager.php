@@ -9,11 +9,24 @@ use Longman\TelegramBot\Entities\Message;
 use Longman\TelegramBot\Entities\Update;
 use Longman\TelegramBot\Request;
 use Longman\TelegramBot\TelegramLog;
+use Models\BasePdo;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'settings.php';
 
 // Add you bot's username (also to be used for log file names)
 try {
+    $dbh = new PDO('mysql:host=' . $botSettings['mysql']['host'] . ';dbname=' . $botSettings['mysql']['database'],
+        $botSettings['mysql']['user'], $botSettings['mysql']['password']);
+    $admins = array_column(BasePdo::select('amocrm_user', [
+        'fields' => 'chat_id',
+        'where' => ['amocrm_user_type' => 'admin']
+    ]), 'chat_id');
+    $dbh = null;
+    array_walk($admins, function (&$item) {
+        $item = (int) $item;
+    });
+    $botSettings ['admins'] = $admins;
+
     $bot = new TelegramBot\TelegramBotManager\BotManager($botSettings);
     $bot->setCustomGetUpdatesCallback('handleUpdates');
 
@@ -85,15 +98,15 @@ function handleUpdates($get_updates_response):string {
                 'text'    => 'Анализирую тип ' . $update_content->getType() . ' ...' . PHP_EOL,
             ]);
 
-            if (in_array($update_content->getType(), ['text', 'phone_number'])) {
-                $answerText = '';
-                $inputText = $update_content->getText();
+            //if (in_array($update_content->getType(), ['text', 'phone_number'])) {
+            //    $answerText = '';
+            //    $inputText = $update_content->getText();
 
                 /*Request::sendMessage([
                     'chat_id' => $chat_id,
                     'text'    => $answerText,
                 ]);*/
-            }
+            //}
 
         } elseif ($update_content instanceof InlineQuery || $update_content instanceof ChosenInlineResult) {
             /** @var InlineQuery|ChosenInlineResult $update_content */

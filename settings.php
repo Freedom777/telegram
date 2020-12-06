@@ -70,10 +70,10 @@ $botSettings = [
     ],
 
     // Define all IDs of admin users
-    'admins' => [
+    /*'admins' => [
         (int)getenv('ADMIN_TELEGRAM_ID'),
         (int)getenv('ADMIN2_TELEGRAM_ID'),
-    ],
+    ],*/
 
     // Enter your MySQL database credentials
     'mysql' => [
