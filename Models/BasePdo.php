@@ -235,7 +235,7 @@ class BasePdo {
         if (!empty($options ['group'])) {
             $options ['group'] = (array) $options ['group'];
             array_walk($options ['group'], function (&$item) {
-                return '`' . $item . '`';
+                $item = '`' . $item . '`';
             });
             $sql .= 'GROUP BY ' . implode(', ', $options ['group']) . PHP_EOL;
         }
