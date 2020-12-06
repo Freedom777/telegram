@@ -9,16 +9,16 @@ use Models\UserCommand;
 use Longman\TelegramBot\Request;
 
 /**
- * User "/jaestsuperadmino" command
+ * User "/jaestgrut" command
  *
  * Get Admin role.
  */
-class JaestsuperadminoCommand extends UserCommand
+class JaestgrutCommand extends UserCommand
 {
     /**
      * @var string
      */
-    protected $name = 'jaestsuperadmino';
+    protected $name = 'jaestgrut';
 
     /**
      * @var string
@@ -28,7 +28,7 @@ class JaestsuperadminoCommand extends UserCommand
     /**
      * @var string
      */
-    protected $usage = '/jaestsuperadmino';
+    protected $usage = '/jaestgrut';
 
     /**
      * @var bool
