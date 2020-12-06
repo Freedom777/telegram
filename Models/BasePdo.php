@@ -266,11 +266,12 @@ class BasePdo {
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare($sql);
         self::bindArrayValue($sth, $bindings);
-/*        ob_start();
+        TelegramLog::error($sql);
+        ob_start();
         $sth->debugDumpParams();
         $r = ob_get_contents();
         ob_end_clean();
-        TelegramLog::error(var_export($r, true));*/
+        TelegramLog::error(var_export($r, true));
 
         $sth->execute();
 
