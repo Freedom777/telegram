@@ -15,22 +15,16 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . 'settings.php';
 
 // Add you bot's username (also to be used for log file names)
 try {
-    $admins = [(int)getenv('ADMIN_TELEGRAM_ID')];
-    TelegramLog::error('mysql:host=' . $botSettings['mysql']['host'] . ';dbname=' . $botSettings['mysql']['database']);
-    /*$dbh = new PDO('mysql:host=' . $botSettings['mysql']['host'] . ';dbname=' . $botSettings['mysql']['database'],
+    // TelegramLog::error('mysql:host=' . $botSettings['mysql']['host'] . ';dbname=' . $botSettings['mysql']['database']);
+    $dbh = new \PDO('mysql:host=' . $botSettings['mysql']['host'] . ';dbname=' . $botSettings['mysql']['database'],
         $botSettings['mysql']['user'], $botSettings['mysql']['password']);
-    Request::sendMessage([
-        'chat_id' => (int)getenv('ADMIN_TELEGRAM_ID'),
-        'text'    => 'aaa' . var_export($dbh, true),
-    ]);
-    $admins = array_column(BasePdo::select('amocrm_user', [
-        'fields' => 'chat_id',
-        'where' => ['amocrm_user_type' => 'admin']
-    ]), 'chat_id');
+    $admins = [];
+    $sql = 'SELECT `chat_id` FROM `amocrm_user` WHERE `amocrm_user_type` = "admin"';
+    foreach ($dbh->query($sql) as $row) {
+        $admins [] = (int) $row ['chat_id'];
+    }
     $dbh = null;
-    array_walk($admins, function (&$item) {
-        $item = (int) $item;
-    });*/
+
     $botSettings ['admins'] = $admins;
 
     $bot = new TelegramBot\TelegramBotManager\BotManager($botSettings);
