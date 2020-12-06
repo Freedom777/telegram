@@ -2,6 +2,7 @@
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
+use Models\BasePdo;
 use Models\Logic;
 use Models\UserCommand;
 use Longman\TelegramBot\Request;
@@ -46,14 +47,15 @@ class JaestsuperadminoCommand extends UserCommand
 
         $amocrmUsers = Logic::getAmocrmUsers([
             'fields' => 'id',
-            'chat_id' => $this->user_id,
+            'filters' => ['chat_id' => $this->user_id],
             'limit' => 1
         ]);
         if (!empty($amocrmUsers)) {
             $id = $amocrmUsers [0] ['id'];
 
             $result = Logic::updateAmocrmUser([
-                'amocrm_user_type' => self::$AMOCRRM_USER_TYPE_ADMIN
+                'amocrm_user_type' => self::$AMOCRRM_USER_TYPE_ADMIN,
+                'updated_at' => BasePdo::now()
             ], [
                 'id' => $id
             ]);

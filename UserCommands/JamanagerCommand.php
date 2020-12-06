@@ -3,6 +3,7 @@
 namespace Longman\TelegramBot\Commands\UserCommands;
 
 use Longman\TelegramBot\TelegramLog;
+use Models\BasePdo;
 use Models\Logic;
 use Models\UserCommand;
 use Longman\TelegramBot\Request;
@@ -47,7 +48,7 @@ class JamanagerCommand extends UserCommand
 
         $amocrmUsers = Logic::getAmocrmUsers([
             'fields' => 'id',
-            'chat_id' => $this->user_id,
+            'filters' => ['chat_id' => $this->user_id],
             'limit' => 1
         ]);
         TelegramLog::error(var_export($amocrmUsers, true));
@@ -55,7 +56,8 @@ class JamanagerCommand extends UserCommand
             $id = $amocrmUsers [0] ['id'];
 
             $result = Logic::updateAmocrmUser([
-                'amocrm_user_type' => self::$AMOCRRM_USER_TYPE_MANAGER
+                'amocrm_user_type' => self::$AMOCRRM_USER_TYPE_MANAGER,
+                'updated_at' => BasePdo::now(),
             ], [
                 'id' => $id
             ]);
