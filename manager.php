@@ -41,14 +41,11 @@ try {
 
     }*/
 } catch (Longman\TelegramBot\Exception\TelegramException $e) {
-    // Silence is golden!
-    echo $e;
     // Log telegram errors
     TelegramLog::error($e);
-} catch (Longman\TelegramBot\Exception\TelegramLogException $e) {
-    // Silence is golden!
-    // Uncomment this to catch log initialisation errors
-    echo $e;
+} catch (\Exception $e) {
+    // Log telegram errors
+    TelegramLog::error($e);
 }
 
 /*function handleUpdates($get_updates_response):string {
