@@ -175,7 +175,7 @@ class BasePdo {
                     );
                     $valueBindings = array_keys($bindingsWhere);
                     array_walk($valueBindings, function (&$item) {
-                        return ':' . $item;
+                        $item = ':' . $item;
                     });
                     $bindings = array_merge($bindings, $bindingsWhere);
                     $whereCond [] = '`' . $fieldName . '`' . ' IN (' . implode(', ', $valueBindings) . ')';
