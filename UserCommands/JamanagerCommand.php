@@ -2,6 +2,7 @@
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
+use Longman\TelegramBot\TelegramLog;
 use Models\Logic;
 use Models\UserCommand;
 use Longman\TelegramBot\Request;
@@ -49,6 +50,7 @@ class JamanagerCommand extends UserCommand
             'chat_id' => $this->user_id,
             'limit' => 1
         ]);
+        TelegramLog::error(var_export($amocrmUsers), true);
         if (!empty($amocrmUsers)) {
             $id = $amocrmUsers [0] ['id'];
 
