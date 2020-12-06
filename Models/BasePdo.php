@@ -178,7 +178,7 @@ class BasePdo {
                         return ':' . $item;
                     });
                     $bindings = array_merge($bindings, $bindingsWhere);
-                    $whereCond [] = '`' . $fieldName . '`' . ' IN (' . implode('\', \'', $valueBindings) . ')';
+                    $whereCond [] = '`' . $fieldName . '`' . ' IN (' . implode(', ', $valueBindings) . ')';
                 } else {
                     if (null === $val) {
                         $whereCond [] = '`' . $fieldName . '`' . ' IS NULL';
@@ -261,7 +261,6 @@ class BasePdo {
         if (!empty($options ['limit'])) {
             $sql .= 'LIMIT ' . $options ['limit'] . PHP_EOL;
         }
-        // TelegramLog::error(self::getSql($sql, $bindings));
 
         // Result prepare
         /** @var \PDOStatement $pdoStatement */
