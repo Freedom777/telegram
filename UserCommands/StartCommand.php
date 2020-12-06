@@ -101,9 +101,12 @@ class StartCommand extends UserCommand
                                 $this->renderMenu($data);
                                 $this->conversation->stop();
                             } else {
+                                $amocrmUserId = null;
                                 $this->renderError($data, $phone);
                             }
                         } catch (AmoWrapException $e) {
+                            $amocrmUserId = null;
+                            TelegramLog::error(self::ERROR_AMOCRM . ', user phone:' . $phone);
                             $data ['text'] = self::ERROR_AMOCRM;
                         }
                     }
