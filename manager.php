@@ -15,7 +15,8 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . 'settings.php';
 
 // Add you bot's username (also to be used for log file names)
 try {
-    $dbh = new PDO('mysql:host=' . $botSettings['mysql']['host'] . ';dbname=' . $botSettings['mysql']['database'],
+    $admins = [(int)getenv('ADMIN_TELEGRAM_ID')];
+    /*$dbh = new PDO('mysql:host=' . $botSettings['mysql']['host'] . ';dbname=' . $botSettings['mysql']['database'],
         $botSettings['mysql']['user'], $botSettings['mysql']['password']);
     Request::sendMessage([
         'chat_id' => (int)getenv('ADMIN_TELEGRAM_ID'),
@@ -28,7 +29,7 @@ try {
     $dbh = null;
     array_walk($admins, function (&$item) {
         $item = (int) $item;
-    });
+    });*/
     $botSettings ['admins'] = $admins;
 
     $bot = new TelegramBot\TelegramBotManager\BotManager($botSettings);
