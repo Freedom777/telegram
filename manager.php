@@ -45,10 +45,10 @@ try {
     }*/
 } catch (Longman\TelegramBot\Exception\TelegramException $e) {
     // Log telegram errors
-    TelegramLog::error($e);
+    TelegramLog::error($e->getMessage());
 } catch (\PDOException $e) {
     // Log telegram errors
-    TelegramLog::error($e);
+    TelegramLog::error($e->getMessage());
 }
 
 /*function handleUpdates($get_updates_response):string {
