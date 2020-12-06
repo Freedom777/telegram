@@ -111,6 +111,7 @@ class BasePdo {
      */
     protected static function bindArrayValue(\PDOStatement &$sth, array $data, $typeArray = false) {
         if (is_object($sth) && ($sth instanceof \PDOStatement)) {
+            TelegramLog::error(var_export($data, true));
             foreach($data as $key => $value) {
                 if ($typeArray) {
                     $sth->bindValue(':' . $key, $value, $typeArray[$key]);
