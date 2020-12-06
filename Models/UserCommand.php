@@ -29,9 +29,9 @@ abstract class UserCommand extends UserCommandBase {
             'fields' => ['id', 'amocrm_user_id'],
             'filters' => [
                 'chat_id' => $this->chat_id,
-                'phone' => $phone,
-                'limit' => 1,
-            ]
+                'phone' => $phone
+            ],
+            'limit' => 1,
         ]);
 
         if (!empty($exist)) {

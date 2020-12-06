@@ -229,7 +229,7 @@ class BasePdo {
         $sql = 'SELECT ' . $selectFields . ' FROM `' . $table . '`' . PHP_EOL;
 
         // WHERE ...
-        $sql .= self::processWhere($bindings, $options ['where']) . PHP_EOL;
+        $sql .= self::processWhere($bindings, $options ['where']);
 
         // GROUP BY ...
         if (!empty($options ['group'])) {
