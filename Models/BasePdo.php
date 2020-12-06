@@ -111,7 +111,6 @@ class BasePdo {
      */
     protected static function bindArrayValue(\PDOStatement &$sth, array $data, $typeArray = false) {
         if (is_object($sth) && ($sth instanceof \PDOStatement)) {
-            TelegramLog::error(var_export($data, true));
             foreach($data as $key => $value) {
                 if ($typeArray) {
                     $sth->bindValue(':' . $key, $value, $typeArray[$key]);
@@ -261,15 +260,26 @@ class BasePdo {
         if (!empty($options ['limit'])) {
             $sql .= 'LIMIT ' . $options ['limit'] . PHP_EOL;
         }
-        TelegramLog::error(self::getSql($sql, $bindings));
+        // TelegramLog::error(self::getSql($sql, $bindings));
 
         // Result prepare
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare($sql);
         self::bindArrayValue($sth, $bindings);
-        TelegramLog::error(var_export($sth, true));
+
+        ob_start();
+        $sth->debugDumpParams();
+        $r = ob_get_contents();
+        ob_end_clean();
+        TelegramLog::error(var_export($r, true));
 
         $sth->execute();
+        ob_start();
+        $sth->debugDumpParams();
+        $r = ob_get_contents();
+        ob_end_clean();
+        TelegramLog::error(var_export($r, true));
+
         if ($options ['sth']) {
             return $sth;
         }
