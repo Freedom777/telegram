@@ -46,7 +46,7 @@ try {
 } catch (Longman\TelegramBot\Exception\TelegramException $e) {
     // Log telegram errors
     TelegramLog::error($e);
-} catch (\Exception $e) {
+} catch (\PDOException $e) {
     // Log telegram errors
     TelegramLog::error($e);
 }
