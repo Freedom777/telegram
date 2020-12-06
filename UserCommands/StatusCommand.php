@@ -1,19 +1,10 @@
 <?php
-/**
- * This file is part of the TelegramBot package.
- *
- * (c) Avtandil Kikabidze aka LONGMAN <akalongman@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
 
 namespace Longman\TelegramBot\Commands\UserCommands;
 
 use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use DrillCoder\AmoCRM_Wrap\AmoWrapException;
 use DrillCoder\AmoCRM_Wrap\Contact;
-use Longman\TelegramBot\TelegramLog;
 use Models\UserCommand;
 use Longman\TelegramBot\Request;
 
@@ -58,8 +49,6 @@ class StatusCommand extends UserCommand
      */
     public function execute()
     {
-        $this->prepareInput();
-
         $data = $this->prepareInput();
         $answerText = 'Введите /start для авторизации.';
 
