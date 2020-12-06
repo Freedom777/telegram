@@ -3,7 +3,6 @@
 namespace Models;
 
 use Longman\TelegramBot\DB;
-use Longman\TelegramBot\TelegramLog;
 
 class BasePdo {
     public static function now() {

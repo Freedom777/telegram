@@ -12,6 +12,7 @@ namespace Longman\TelegramBot\Commands\UserCommands;
 
 use DrillCoder\AmoCRM_Wrap\AmoCRM;
 use DrillCoder\AmoCRM_Wrap\AmoWrapException;
+use Longman\TelegramBot\TelegramLog;
 use Models\UserCommand;
 use Longman\TelegramBot\Entities\InlineKeyboard;
 use Longman\TelegramBot\Entities\InlineKeyboardButton;
@@ -85,6 +86,7 @@ class StartCommand extends UserCommand
                     $contactId = null;
 
                     $amocrmUserId = $this->getAmocrmUserIdByPhone($phone);
+                    TelegramLog::error('check 1: amocrmUserId = ' . var_export($amocrmUserId, true) . PHP_EOL);
                     if (!empty($amocrmUserId)) {
                         $this->renderMenu($data);
                         $this->conversation->stop();
@@ -105,6 +107,7 @@ class StartCommand extends UserCommand
                             $data ['text'] = self::ERROR_AMOCRM;
                         }
                     }
+                    TelegramLog::error('check 2: amocrmUserId = ' . var_export($amocrmUserId, true) . PHP_EOL);
                     $this->checkInsertUser($phone, $amocrmUserId);
                 } else {
                     $data ['text'] = 'Вы должны указать 10 цифр в качестве номера телефона.';
