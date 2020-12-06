@@ -109,7 +109,7 @@ class BasePdo {
      * @param array $data
      * @param false|array $typeArray
      */
-    protected static function bindArrayValue(\PDOStatement &$sth, array $data, $typeArray = false) {
+    protected static function bindArrayValue(\PDOStatement $sth, array $data, $typeArray = false) {
         if (is_object($sth) && ($sth instanceof \PDOStatement)) {
             foreach($data as $key => $value) {
                 if ($typeArray) {
