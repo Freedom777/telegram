@@ -12,9 +12,15 @@ class BasePdo {
         return (new \DateTime('now', $dateTimeZone))->format('Y-m-d H:i:s');
     }
 
-    public static function getSql($string,$data) {
+    /**
+     * @param string $string
+     * @param array $data
+     *
+     * @return string
+     */
+    public static function getSql(string $string = '', array $data = []) : string {
         $indexed = ($data == array_values($data));
-        foreach($data as $k=>$v) {
+        foreach($data as $k => $v) {
             if (is_string($v)) {
                 $v = '"' . $v . '"';
             }
@@ -65,7 +71,7 @@ class BasePdo {
      * @return bool
      * @throws \Exception
      */
-    public static function insert(string $table, array $data = []) {
+    public static function insert(string $table, array $data = []) : bool {
         $sql = self::prepareInsertUpdateSet('insert', $table, $data);
 
         /** @var \PDOStatement $pdoStatement */
@@ -85,7 +91,7 @@ class BasePdo {
      * @return bool
      * @throws \Exception
      */
-    public static function update(string $table, array $data = [], $where = []) {
+    public static function update(string $table, array $data = [], $where = []) : bool {
         $sql = self::prepareInsertUpdateSet('update', $table, $data);
         $sql .= self::processWhere($data, $where);
 
@@ -98,7 +104,12 @@ class BasePdo {
         return $result;
     }
 
-    protected static function bindArrayValue($sth, $data, $typeArray = false) {
+    /**
+     * @param \PDOStatement $sth
+     * @param array $data
+     * @param false|array $typeArray
+     */
+    protected static function bindArrayValue(\PDOStatement &$sth, array $data, $typeArray = false) {
         if (is_object($sth) && ($sth instanceof \PDOStatement)) {
             foreach($data as $key => $value) {
                 if ($typeArray) {
@@ -129,7 +140,13 @@ class BasePdo {
         }
     }
 
-    protected static function processWhere(&$bindings, $whereOptions = []) {
+    /**
+     * @param $bindings
+     * @param array $whereOptions
+     *
+     * @return string
+     */
+    protected static function processWhere(&$bindings, $whereOptions = []) : string {
         $sql = '';
         $whereOptions = (array) $whereOptions;
 
@@ -243,8 +260,7 @@ class BasePdo {
         if (!empty($options ['limit'])) {
             $sql .= 'LIMIT ' . $options ['limit'] . PHP_EOL;
         }
-        TelegramLog::error($sql);
-        TelegramLog::error(var_export($bindings, true));
+        TelegramLog::error(self::getSql($sql, $bindings));
 
         // Result prepare
         /** @var \PDOStatement $pdoStatement */
