@@ -268,18 +268,18 @@ class BasePdo {
         $sth = DB::getPdo()->prepare($sql);
         self::bindArrayValue($sth, $bindings);
 
-        /*ob_start();
+        ob_start();
         $sth->debugDumpParams();
         $r = ob_get_contents();
         ob_end_clean();
-        TelegramLog::error(var_export($r, true));*/
+        TelegramLog::error(var_export($r, true));
 
         $sth->execute();
-        /*ob_start();
+        ob_start();
         $sth->debugDumpParams();
         $r = ob_get_contents();
         ob_end_clean();
-        TelegramLog::error(var_export($r, true));*/
+        TelegramLog::error(var_export($r, true));
 
         if ($options ['sth']) {
             return $sth;
