@@ -10,6 +10,7 @@ use Longman\TelegramBot\Entities\Update;
 use Longman\TelegramBot\Request;
 use Longman\TelegramBot\TelegramLog;
 use Models\BasePdo;
+use Models\Logic;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'settings.php';
 
@@ -17,9 +18,9 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . 'settings.php';
 try {
     $dbh = new PDO('mysql:host=' . $botSettings['mysql']['host'] . ';dbname=' . $botSettings['mysql']['database'],
         $botSettings['mysql']['user'], $botSettings['mysql']['password']);
-    $admins = array_column(BasePdo::select('amocrm_user', [
+    $admins = array_column(Logic::getAmocrmUsers([
         'fields' => 'chat_id',
-        'where' => ['amocrm_user_type' => 'admin']
+        'filters' => ['amocrm_user_type' => 'admin']
     ]), 'chat_id');
     $dbh = null;
     array_walk($admins, function (&$item) {
