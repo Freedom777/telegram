@@ -89,10 +89,13 @@ class SurveyFailCommand extends AdminCommand
                     if (!empty($sender) && !empty($sender[0]) && !empty($sender[0]['phone'])) {
                         $phone = $sender[0]['phone'];
 
-                        $receivers = Logic::getAmocrmUsers([
+                        $receiversData = [
                             'fields' => 'chat_id',
-                            'filters' => ['amocrm_user_type' => [self::$AMOCRRM_USER_TYPE_ADMIN, self::$AMOCRRM_USER_TYPE_MANAGER]]
-                        ]);
+                            'filters' => [
+                                'amocrm_user_type' => [self::$AMOCRRM_USER_TYPE_ADMIN, self::$AMOCRRM_USER_TYPE_MANAGER]
+                            ]
+                        ];
+                        $receivers = Logic::getAmocrmUsers($receiversData);
 
                         $data = [
                             'text' => 'Пользователь с номером телефона ' . $phone .
