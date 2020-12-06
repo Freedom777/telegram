@@ -50,7 +50,7 @@ class BasePdo {
         if ('INSERT' == $operator) {
             $sql .= 'INSERT INTO ';
         } elseif ('UPDATE' == $operator) {
-            $sql .= 'UPOATE ';
+            $sql .= 'UPDATE ';
         } else {
             throw new \Exception('Invalid operator.');
         }
@@ -93,7 +93,7 @@ class BasePdo {
      */
     public static function update(string $table, array $data = [], $where = []) : bool {
         $sql = self::prepareInsertUpdateSet('update', $table, $data);
-        $sql .= self::processWhere($data, $where);
+        $sql .= PHP_EOL . self::processWhere($data, $where);
         TelegramLog::error($sql);
         TelegramLog::error(var_export($data, true));
         /** @var \PDOStatement $pdoStatement */
