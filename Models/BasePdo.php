@@ -267,6 +267,7 @@ class BasePdo {
         /** @var \PDOStatement $pdoStatement */
         $sth = DB::getPdo()->prepare($sql);
         self::bindArrayValue($sth, $bindings);
+        TelegramLog::error(var_export($sth, true));
 
         $sth->execute();
         if ($options ['sth']) {
