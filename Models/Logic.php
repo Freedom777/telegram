@@ -17,7 +17,7 @@ class Logic {
         $options = array_merge($default, $options);
 
         /** @var array $result */
-        $result = Queries::select('amocrm_user', [
+        $result = BasePdo::select('amocrm_user', [
             'fields' => $options ['fields'],
             'where' => $options ['filters'],
             'order' => $options ['order'],

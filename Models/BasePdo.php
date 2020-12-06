@@ -92,8 +92,7 @@ class BasePdo {
      * @throws \Exception
      */
     public static function update(string $table, array $data = [], $where = []) : bool {
-        $sql = self::prepareInsertUpdateSet('update', $table, $data);
-        $sql .= PHP_EOL . self::processWhere($data, $where);
+        $sql = self::prepareInsertUpdateSet('update', $table, $data) . PHP_EOL . self::processWhere($data, $where);
         TelegramLog::error($sql);
         TelegramLog::error(var_export($data, true));
         /** @var \PDOStatement $pdoStatement */
@@ -230,7 +229,7 @@ class BasePdo {
         $sql = 'SELECT ' . $selectFields . ' FROM `' . $table . '`' . PHP_EOL;
 
         // WHERE ...
-        $sql .= self::processWhere($bindings, $options ['where']);
+        $sql .= self::processWhere($bindings, $options ['where']) . PHP_EOL;
 
         // GROUP BY ...
         if (!empty($options ['group'])) {
