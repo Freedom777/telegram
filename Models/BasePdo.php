@@ -115,17 +115,17 @@ class BasePdo {
                 if ($typeArray) {
                     $sth->bindValue(':' . $key, $value, $typeArray[$key]);
                 } else {
-                    TelegramLog::error(gettype($value));
                     switch (gettype($value)) {
-                        case 'int':
+                        case 'integer':
                             $param = \PDO::PARAM_INT;
                             break;
-                        case 'bool':
+                        case 'boolean':
                             $param = \PDO::PARAM_BOOL;
                             break;
                         case 'NULL':
                             $param = \PDO::PARAM_NULL;
                             break;
+                        case 'double':
                         case 'string':
                             $param = \PDO::PARAM_STR;
                             break;
@@ -268,18 +268,18 @@ class BasePdo {
         $sth = DB::getPdo()->prepare($sql);
         self::bindArrayValue($sth, $bindings);
 
-        ob_start();
+        /*ob_start();
         $sth->debugDumpParams();
         $r = ob_get_contents();
         ob_end_clean();
-        TelegramLog::error(var_export($r, true));
+        TelegramLog::error(var_export($r, true));*/
 
         $sth->execute();
-        ob_start();
+        /*ob_start();
         $sth->debugDumpParams();
         $r = ob_get_contents();
         ob_end_clean();
-        TelegramLog::error(var_export($r, true));
+        TelegramLog::error(var_export($r, true));*/
 
         if ($options ['sth']) {
             return $sth;
